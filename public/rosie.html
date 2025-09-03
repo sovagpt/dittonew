@@ -629,7 +629,7 @@ async function handleVoiceInput(transcript) {
 async function loadAnimeGirl() {
     const loader = new THREE.GLTFLoader();
     return new Promise((resolve) => {
-        loader.load('https://raw.githubusercontent.com/cheddariniii/hamster/main/chibi_idle.glb', (gltf) => {
+        loader.load('https://raw.githubusercontent.com/sovagpt/hamster/main/chibi_idle.glb', (gltf) => {
             animeModel = gltf.scene;
             scene.add(animeModel);
 
@@ -758,4 +758,5 @@ document.addEventListener('DOMContentLoaded', () => {
         <button class="deploy-btn">Deploy Your Own AI Voice Agent</button>
     </div>
 </body>
+
 </html>
