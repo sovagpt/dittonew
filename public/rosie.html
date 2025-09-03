@@ -434,7 +434,7 @@ async function init() {
 async function loadDittoModel() {
     const loader = new THREE.GLTFLoader();
     return new Promise((resolve) => {
-        loader.load('https://raw.githubusercontent.com/cheddariniii/ditto/main/ditto_dancing_pokemon.glb', (gltf) => {
+        const proxyUrl = `${API_BASE}/proxy?url=${encodeURIComponent('https://raw.githubusercontent.com/sovagpt/ditto55/master/ditto_dancing_pokemon.glb')}`;
             dittoModel = gltf.scene;
             scene.add(dittoModel);
 
@@ -629,7 +629,7 @@ async function handleVoiceInput(transcript) {
 async function loadAnimeGirl() {
     const loader = new THREE.GLTFLoader();
     return new Promise((resolve) => {
-        loader.load('https://raw.githubusercontent.com/sovagpt/hamster/main/chibi_idle.glb', (gltf) => {
+        const proxyUrl = `${API_BASE}/proxy?url=${encodeURIComponent('https://raw.githubusercontent.com/sovagpt/hamster/master/chibi_idle.glb')}`;
             animeModel = gltf.scene;
             scene.add(animeModel);
 
@@ -760,3 +760,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </body>
 
 </html>
+
