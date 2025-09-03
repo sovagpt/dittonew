@@ -1,29 +1,15 @@
 const { MongoClient } = require('mongodb');
 
-let cachedDb = null;
 let cachedClient = null;
 
 async function connectToDatabase(uri) {
-    if (cachedDb && cachedClient) {
-        return cachedDb;
+    if (cachedClient) {
+        return cachedClient.db();
     }
     
-    const client = new MongoClient(uri, {
-    useUnifiedTopology: true,
-    serverSelectionTimeoutMS: 5000,
-    socketTimeoutMS: 45000,
-    maxPoolSize: 10,
-    minPoolSize: 5,
-    maxIdleTimeMS: 30000,
-    // Remove this line: bufferMaxEntries: 0,
-    tlsAllowInvalidCertificates: false,
-    tlsAllowInvalidHostnames: false,
-});
-    
-    cachedClient = await client.connect();
-    const db = cachedClient.db('dittoai');
-    cachedDb = db;
-    return db;
+    cachedClient = new MongoClient(uri);
+    await cachedClient.connect();
+    return cachedClient.db();
 }
 
 module.exports = async function handler(req, res) {
@@ -56,4 +42,3 @@ module.exports = async function handler(req, res) {
         res.status(500).json({ error: 'Database connection failed', details: error.message });
     }
 };
-
