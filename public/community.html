@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Community Creations - DittoGPT</title>
+    <link rel="icon" type="image/webp" href="https://cdn.prod.website-files.com/674396c59212c6ea348b24e0/678699eef3f050d53a05dac1_dbfonty-dbbe0a78-2f54-494e-bce6-7a7ea7157b73.gif">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/FontLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/geometries/TextGeometry.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            background: url('https://cdn.prod.website-files.com/674396c59212c6ea348b24e0/677815b17d293c5b2b9269c8_forest.png') no-repeat center center fixed;
+            background-size: cover;
+            overflow: hidden;
+            font-family: 'Press Start 2P', system-ui;
+        }
+        
+        canvas {
+            width: 100%;
+            height: 100vh;
+        }
+
+        .loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'Press Start 2P', system-ui;
+            color: #A664A5;
+            text-align: center;
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 30px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+        }
+
+        .error-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'Press Start 2P', system-ui;
+            color: #FF5350;
+            text-align: center;
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 30px;
+            border-radius: 10px;
+            border: 1px solid #FF5350;
+            backdrop-filter: blur(5px);
+            max-width: 500px;
+            line-height: 1.8;
+            display: none;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 30px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .logo {
+            color: white;
+            font-family: 'Press Start 2P', system-ui;
+            font-size: 18px;
+            text-shadow: 2px 2px 0 #3B4CCA;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo img {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+        }
+
+        .header-btn {
+            background: #A664A5;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-family: 'Press Start 2P', system-ui;
+            font-size: 12px;
+            transition: transform 0.2s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .header-btn:hover {
+            transform: scale(1.05);
+            background: #8A4589;
+        }
+
+        .model-info {
+            position: fixed;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Press Start 2P', system-ui;
+            font-size: 10px;
+            pointer-events: auto;
+            display: none;
+            z-index: 1000;
+            max-width: 300px;
+            word-wrap: break-word;
+            line-height: 1.8;
+            box-shadow: 0 0 25px rgba(59, 76, 202, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .model-info.pinned {
+            display: block !important;
+            pointer-events: auto;
+        }
+
+        .model-info .download-btn {
+            background: #3B4CCA;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Press Start 2P', system-ui;
+            font-size: 8px;
+            margin-top: 15px;
+            width: 100%;
+            transition: transform 0.2s;
+            box-shadow: 0 0 15px rgba(59, 76, 202, 0.3);
+        }
+
+        .model-info .download-btn:hover {
+            transform: scale(1.05);
+            background: #2A3BBB;
+        }
+
+        .terminal-viewer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 2000;
+            display: none;
+        }
+
+        .terminal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 85%;
+            height: 85%;
+            background: #1a1a1a;
+            border-radius: 15px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
+        }
+
+        .terminal-header {
+            background: #2a2a2a;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #333;
+        }
+
+        .terminal-stats {
+            color: #00ffff;
+            font-family: 'Press Start 2P', system-ui;
+            font-size: 10px;
+            display: flex;
+            gap: 20px;
+        }
+
+        .terminal-close {
+            color: #fff;
+            background: #FF5350;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-family: 'Press Start 2P', system-ui;
+            transition: transform 0.2s;
+        }
+
+        .terminal-close:hover {
+            transform: scale(1.1);
+            background: #FF3330;
+        }
+
+        .terminal-canvas-container {
+            width: 100%;
+            height: calc(100% - 120px);
+            background: #1a1a1a;
+        }
+
+        .terminal-bottom {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(42, 42, 42, 0.95);
+            border-top: 1px solid #333;
+        }
+
+        .terminal-prompt {
+            color: #00ffff;
+            font-family: 'Press Start 2P', system-ui;
+            font-size: 10px;
+            margin-right: auto;
+            max-width: 60%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .terminal-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .terminal-btn {
+            background: #3B4CCA;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: 'Press Start 2P', system-ui;
+            font-size: 10px;
+            transition: transform 0.2s, background-color 0.2s;
+        }
+
+        .terminal-btn:hover {
+            transform: scale(1.05);
+            background: #2A3BBB;
+        }
+
+        .terminal-btn.disabled {
+            background: #666;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        .terminal-btn.disabled:hover {
+            transform: none;
+            background: #666;
+        }
+
+        .model-info-prompt {
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            color: #A664A5;
+        }
+
+        .model-info-date {
+            margin-bottom: 10px;
+            font-size: 8px;
+            opacity: 0.7;
+            color: #00ffff;
+        }
+
+        .controls-info {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Press Start 2P', system-ui;
+            font-size: 8px;
+            z-index: 1000;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            line-height: 1.6;
+        }
+
+        .refresh-btn {
+            position: fixed;
+            top: 100px;
+            right: 30px;
+            background: #3B4CCA;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Press Start 2P', system-ui;
+            font-size: 10px;
+            z-index: 1000;
+            box-shadow: 0 0 15px rgba(59, 76, 202, 0.3);
+            transition: transform 0.2s;
+        }
+
+        .refresh-btn:hover {
+            transform: scale(1.05);
+            background: #2A3BBB;
+        }
+
+        @media (max-width: 768px) {
+            .terminal-content {
+                width: 95%;
+                height: 90%;
+            }
+            
+            .terminal-stats {
+                font-size: 8px;
+                gap: 10px;
+            }
+            
+            .terminal-prompt {
+                font-size: 8px;
+            }
+            
+            .terminal-btn {
+                font-size: 8px;
+                padding: 6px 12px;
+            }
+            
+            .header {
+                padding: 10px 15px;
+            }
+            
+            .logo {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">
+            <img src="https://cdn.prod.website-files.com/674396c59212c6ea348b24e0/678699eef3f050d53a05dac1_dbfonty-dbbe0a78-2f54-494e-bce6-7a7ea7157b73.gif" alt="Ditto Logo">
+            Community Creations
+        </div>
+        <div style="display: flex; gap: 15px; align-items: center;">
+            <div class="header-btn" id="modelCount">Loading...</div>
+            <a href="/" class="header-btn">Back to Creator</a>
+        </div>
+    </div>
+
+    <button class="refresh-btn" onclick="location.reload()">Refresh Gallery</button>
+    
+    <div class="loading" id="loadingScreen">
+        <div>Loading Community Creations...</div>
+        <div style="font-size: 8px; margin-top: 15px; color: rgba(255,255,255,0.7);">
+            This may take a moment while we fetch models
+        </div>
+    </div>
+
+    <div class="error-message" id="errorMessage">
+        <div>Unable to load community models</div>
+        <div style="font-size: 8px; margin-top: 15px; color: rgba(255,255,255,0.7);">
+            This could be due to database connectivity issues or no models being available yet.
+        </div>
+        <button onclick="location.reload()" style="margin-top: 15px; background: #3B4CCA; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-family: 'Press Start 2P', system-ui; font-size: 8px; cursor: pointer;">
+            Try Again
+        </button>
+    </div>
+
+    <div class="model-info" id="modelInfo"></div>
+
+    <div class="controls-info">
+        Hover: View Info<br>
+        Click: Detailed View<br>
+        Mouse: Orbit Camera<br>
+        Scroll: Zoom
+    </div>
+
+    <div class="terminal-viewer" id="terminalViewer">
+        <div class="terminal-content">
+            <div class="terminal-header">
+                <div class="terminal-stats">
+                    <div>Topology: <span id="modelTopology">Quad</span></div>
+                    <div>Faces: <span id="modelFaces">-</span></div>
+                    <div>Vertices: <span id="modelVertices">-</span></div>
+                </div>
+                <button class="terminal-close" onclick="closeTerminalViewer()">&times;</button>
+            </div>
+            <div class="terminal-canvas-container">
+                <canvas id="terminalCanvas"></canvas>
+            </div>
+            <div class="terminal-bottom">
+                <div class="terminal-prompt">
+                    PROMPT: <span id="modelPrompt">Loading...</span>
+                </div>
+                <div class="terminal-buttons">
+                    <button class="terminal-btn" onclick="downloadTerminalModel()" id="downloadBtn">Download</button>
+                    <button class="terminal-btn disabled" title="Coming Soon">Remix ⭐</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let scene, camera, renderer, controls;
+        let terminalRenderer, terminalScene, terminalCamera, terminalControls, activeModel;
+        const models = [];
+        const modelScale = 0.8;
+        const API_BASE_URL = window.location.origin;
+
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+        let hoveredModel = null;
+
+        async function downloadModel(modelUrl) {
+            try {
+                const proxyUrl = `/api/proxy?url=${encodeURIComponent(modelUrl)}`;
+                const response = await fetch(proxyUrl, {
+                    headers: {
+                        'Accept': 'model/gltf-binary'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Download failed: ${response.status}`);
+                }
+                
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `ditto-community-model-${Date.now()}.glb`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+            } catch (error) {
+                console.error('Download failed:', error);
+                alert('Download failed. Please try again.');
+            }
+        }
+
+        async function init() {
+            console.log('Initializing 3D scene...');
+            scene = new THREE.Scene();
+            scene.background = null; // Transparent to show background image
+            
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 3, 12);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setClearColor(0x000000, 0); // Transparent background
+            document.body.appendChild(renderer.domElement);
+
+            // Enhanced lighting for better model visibility
+            const ambientLight = new THREE.AmbientLight(0xffffff, 1.2);
+            scene.add(ambientLight);
+            
+            const directionalLight1 = new THREE.DirectionalLight(0xffffff, 1.0);
+            directionalLight1.position.set(10, 10, 10);
+            scene.add(directionalLight1);
+
+            const directionalLight2 = new THREE.DirectionalLight(0xffffff, 0.5);
+            directionalLight2.position.set(-10, 5, -5);
+            scene.add(directionalLight2);
+
+            // Add rim lighting
+            const rimLight = new THREE.DirectionalLight(0x3B4CCA, 0.3);
+            rimLight.position.set(0, -5, -10);
+            scene.add(rimLight);
+
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.maxPolarAngle = Math.PI * 0.8;
+            controls.minDistance = 5;
+            controls.maxDistance = 25;
+
+            // Add title text
+            const fontLoader = new THREE.FontLoader();
+            fontLoader.load('https://threejs.org/examples/fonts/helvetiker_bold.typeface.json', function(font) {
+                const textGeometry = new THREE.TextGeometry('Community Gallery', {
+                    font: font,
+                    size: 1.2,
+                    height: 0.15,
+                    curveSegments: 12,
+                    bevelEnabled: true,
+                    bevelThickness: 0.02,
+                    bevelSize: 0.01,
+                    bevelOffset: 0,
+                    bevelSegments: 5
+                });
+
+                textGeometry.computeBoundingBox();
+                const textWidth = textGeometry.boundingBox.max.x - textGeometry.boundingBox.min.x;
+                
+                const material = new THREE.MeshPhongMaterial({ 
+                    color: 0xA664A5,
+                    specular: 0x555555,
+                    shininess: 30
+                });
+                
+                const textMesh = new THREE.Mesh(textGeometry, material);
+                textMesh.position.x = -textWidth / 2;
+                textMesh.position.y = 6;
+                textMesh.position.z = -3;
+                scene.add(textMesh);
+            });
+
+            try {
+                await loadCommunityModels();
+                document.getElementById('loadingScreen').style.display = 'none';
+            } catch (error) {
+                document.getElementById('loadingScreen').style.display = 'none';
+                document.getElementById('errorMessage').style.display = 'block';
+            }
+            
+            animateMain();
+        }
+
+        function animateMain() {
+            requestAnimationFrame(animateMain);
+            
+            // Rotate models for visual appeal
+            models.forEach((model, index) => {
+                model.rotation.y += 0.003 + (index * 0.001);
+                // Add subtle floating animation
+                model.position.y = -1.5 + Math.sin(Date.now() * 0.001 + index) * 0.2;
+            });
+
+            controls.update();
+            renderer.render(scene, camera);
+
+            // Terminal viewer animation
+            if (terminalControls) {
+                terminalControls.update();
+            }
+            if (terminalRenderer && terminalScene && terminalCamera) {
+                terminalRenderer.render(terminalScene, terminalCamera);
+            }
+        }
+
+        async function loadCommunityModels() {
+            console.log('Fetching community models...');
+            
+            try {
+                const response = await fetch('/api/community/models', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                console.log('API Response status:', response.status);
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('API Error:', response.status, errorText);
+                    throw new Error(`API request failed: ${response.status}`);
+                }
+
+                const communityModels = await response.json();
+                console.log('Received models:', communityModels);
+                
+                if (!Array.isArray(communityModels)) {
+                    console.error('Invalid response format:', communityModels);
+                    throw new Error('Invalid response format from server');
+                }
+
+                if (communityModels.length === 0) {
+                    document.getElementById('modelCount').textContent = '0 Creations';
+                    document.getElementById('loadingScreen').innerHTML = `
+                        <div>No community models found</div>
+                        <div style="font-size: 8px; margin-top: 15px; color: rgba(255,255,255,0.7);">
+                            Be the first to create a 3D model!
+                        </div>
+                        <a href="/" style="display: inline-block; margin-top: 15px; background: #3B4CCA; color: white; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-family: 'Press Start 2P', system-ui; font-size: 8px;">
+                            Create First Model
+                        </a>
+                    `;
+                    document.getElementById('loadingScreen').style.display = 'block';
+                    return;
+                }
+
+                const loader = new THREE.GLTFLoader();
+                let loadedCount = 0;
+
+                for (let i = 0; i < Math.min(communityModels.length, 20); i++) { // Limit to 20 models for performance
+                    const modelData = communityModels[i];
+                    
+                    if (!modelData.modelUrl) {
+                        console.warn(`Model ${i} missing modelUrl:`, modelData);
+                        continue;
+                    }
+
+                    try {
+                        document.getElementById('loadingScreen').innerHTML = `
+                            <div>Loading model ${i + 1} of ${Math.min(communityModels.length, 20)}</div>
+                            <div style="font-size: 8px; margin-top: 15px; color: rgba(255,255,255,0.7);">
+                                "${modelData.prompt?.substring(0, 50)}..."
+                            </div>
+                        `;
+
+                        const proxyUrl = `/api/proxy?url=${encodeURIComponent(modelData.modelUrl)}`;
+                        console.log(`Loading model ${i + 1}:`, proxyUrl);
+                        
+                        const gltf = await new Promise((resolve, reject) => {
+                            const timeoutId = setTimeout(() => {
+                                reject(new Error('Model load timeout'));
+                            }, 30000); // 30 second timeout
+
+                            loader.load(
+                                proxyUrl, 
+                                (result) => {
+                                    clearTimeout(timeoutId);
+                                    resolve(result);
+                                }, 
+                                (progress) => {
+                                    if (progress.total > 0) {
+                                        const percent = Math.round((progress.loaded / progress.total) * 100);
+                                        console.log(`Model ${i + 1} loading: ${percent}%`);
+                                    }
+                                }, 
+                                (error) => {
+                                    clearTimeout(timeoutId);
+                                    reject(error);
+                                }
+                            );
+                        });
+
+                        const model = gltf.scene;
+                        
+                        // Set model metadata
+                        model.userData = {
+                            prompt: modelData.prompt || 'Unknown prompt',
+                            created: new Date(modelData.timestamp || modelData.createdAt).toLocaleDateString(),
+                            modelUrl: modelData.modelUrl,
+                            imageUrl: modelData.imageUrl
+                        };
+
+                        model.scale.set(modelScale, modelScale, modelScale);
+                        
+                        // Arrange models in a spiral pattern
+                        const radius = 6 + Math.floor(i / 8) * 4;
+                        const angle = (i % 8) * (Math.PI * 2 / 8) + (Math.floor(i / 8) * 0.5);
+                        model.position.x = Math.cos(angle) * radius;
+                        model.position.z = Math.sin(angle) * radius;
+                        model.position.y = -1.5;
+                        
+                        // Add model to scene
+                        scene.add(model);
+                        models.push(model);
+                        loadedCount++;
+
+                        console.log(`Successfully loaded model ${i + 1}: "${modelData.prompt}"`);
+
+                    } catch (error) {
+                        console.error(`Failed to load model ${i + 1}:`, error);
+                        // Continue with next model instead of failing entirely
+                    }
+                }
+
+                document.getElementById('modelCount').textContent = `${loadedCount} Creations`;
+                console.log(`Successfully loaded ${loadedCount} models`);
+
+            } catch (error) {
+                console.error('Failed to load community models:', error);
+                throw error;
+            }
+        }
+
+        // Mouse interaction handlers
+        window.addEventListener('mousemove', (event) => {
+            const modelInfo = document.getElementById('modelInfo');
+            
+            if (modelInfo.classList.contains('pinned')) {
+                return;
+            }
+            
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+            
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(scene.children, true);
+            
+            let foundModel = null;
+            for (const intersect of intersects) {
+                if (intersect.object.userData && intersect.object.userData.prompt) {
+                    foundModel = intersect.object;
+                    break;
+                }
+                // Check parent objects
+                let parent = intersect.object.parent;
+                while (parent && parent !== scene) {
+                    if (parent.userData && parent.userData.prompt) {
+                        foundModel = parent;
+                        break;
+                    }
+                    parent = parent.parent;
+                }
+                if (foundModel) break;
+            }
+            
+            if (foundModel !== hoveredModel) {
+                hoveredModel = foundModel;
+                if (hoveredModel) {
+                    modelInfo.style.display = 'block';
+                    modelInfo.innerHTML = `
+                        <div class="model-info-prompt">"${hoveredModel.userData.prompt}"</div>
+                        <div class="model-info-date">Created: ${hoveredModel.userData.created}</div>
+                        <button onclick="downloadModel('${hoveredModel.userData.modelUrl}')" class="download-btn">
+                            Download GLB
+                        </button>
+                    `;
+                } else {
+                    modelInfo.style.display = 'none';
+                }
+            }
+            
+            if (hoveredModel) {
+                modelInfo.style.left = Math.min(event.clientX + 20, window.innerWidth - 320) + 'px';
+                modelInfo.style.top = Math.min(event.clientY + 10, window.innerHeight - 200) + 'px';
+            }
+        });
+
+        window.addEventListener('click', (event) => {
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+            
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(scene.children, true);
+            
+            let clickedModel = null;
+            for (const intersect of intersects) {
+                if (intersect.object.userData && intersect.object.userData.prompt) {
+                    clickedModel = intersect.object;
+                    break;
+                }
+                // Check parent objects
+                let parent = intersect.object.parent;
+                while (parent && parent !== scene) {
+                    if (parent.userData && parent.userData.prompt) {
+                        clickedModel = parent;
+                        break;
+                    }
+                    parent = parent.parent;
+                }
+                if (clickedModel) break;
+            }
+            
+            if (clickedModel) {
+                openTerminalViewer(clickedModel);
+                event.stopPropagation();
+            }
+        });
+
+        // Terminal viewer functions
+        function initTerminalViewer() {
+            const canvas = document.getElementById('terminalCanvas');
+            const container = document.querySelector('.terminal-canvas-container');
+            
+            canvas.style.width = '100%';
+            canvas.style.height = '100%';
+            
+            terminalScene = new THREE.Scene();
+            terminalScene.background = new THREE.Color(0x1a1a1a);
+            
+            const aspect = container.clientWidth / container.clientHeight;
+            terminalCamera = new THREE.PerspectiveCamera(75, aspect, 0.1, 1000);
+            terminalCamera.position.set(0, 1, 4);
+            
+            terminalRenderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+            terminalRenderer.setSize(container.clientWidth, container.clientHeight, false);
+            
+            // Enhanced lighting for terminal viewer
+            const ambientLight = new THREE.AmbientLight(0xffffff, 1.5);
+            terminalScene.add(ambientLight);
+            
+            const frontLight = new THREE.DirectionalLight(0xffffff, 1.2);
+            frontLight.position.set(2, 2, 5);
+            terminalScene.add(frontLight);
+            
+            const backLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            backLight.position.set(-2, 1, -3);
+            terminalScene.add(backLight);
+            
+            terminalControls = new THREE.OrbitControls(terminalCamera, canvas);
+            terminalControls.enableDamping = true;
+            terminalControls.dampingFactor = 0.05;
+            terminalControls.autoRotate = true;
+            terminalControls.autoRotateSpeed = 1.0;
+        }
+
+        function openTerminalViewer(model) {
+            console.log('Opening terminal viewer with model:', model);
+            const viewer = document.getElementById('terminalViewer');
+            viewer.style.display = 'block';
+            
+            if (!terminalScene) {
+                console.log('Initializing terminal viewer');
+                initTerminalViewer();
+            }
+            
+            // Clear existing model
+            if (activeModel) {
+                terminalScene.remove(activeModel);
+            }
+            
+            // Clone the model
+            activeModel = model.clone();
+            activeModel.position.set(0, 0, 0);
+            activeModel.scale.set(1.5, 1.5, 1.5);
+            
+            // Center the model
+            const box = new THREE.Box3().setFromObject(activeModel);
+            const center = box.getCenter(new THREE.Vector3());
+            activeModel.position.sub(center);
+            
+            terminalScene.add(activeModel);
+            
+            // Update stats
+            let totalFaces = 0;
+            let totalVertices = 0;
+            
+            activeModel.traverse((child) => {
+                if (child.geometry) {
+                    if (child.geometry.index) {
+                        totalFaces += Math.round(child.geometry.index.count / 3);
+                    }
+                    totalVertices += child.geometry.attributes.position.count;
+                }
+            });
+            
+            document.getElementById('modelFaces').textContent = totalFaces || '-';
+            document.getElementById('modelVertices').textContent = totalVertices || '-';
+            document.getElementById('modelPrompt').textContent = model.userData.prompt;
+            
+            // Copy userData for download functionality
+            activeModel.userData = { ...model.userData };
+            
+            // Reset camera position
+            terminalCamera.position.set(0, 1, 4);
+            terminalCamera.lookAt(0, 0, 0);
+            terminalControls.reset();
+            
+            // Force initial render
+            if (terminalRenderer) {
+                terminalRenderer.render(terminalScene, terminalCamera);
+            }
+        }
+
+        function downloadTerminalModel() {
+            if (activeModel && activeModel.userData.modelUrl) {
+                downloadModel(activeModel.userData.modelUrl);
+            }
+        }
+
+        function closeTerminalViewer() {
+            const viewer = document.getElementById('terminalViewer');
+            viewer.style.display = 'none';
+            
+            if (activeModel) {
+                terminalScene.remove(activeModel);
+                activeModel = null;
+            }
+            
+            if (terminalControls) {
+                terminalControls.autoRotate = false;
+            }
+        }
+
+        // Window resize handler
+        window.addEventListener('resize', () => {
+            if (camera && renderer) {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            }
+            
+            if (terminalCamera && terminalRenderer) {
+                const container = document.querySelector('.terminal-canvas-container');
+                const aspect = container.clientWidth / container.clientHeight;
+                terminalCamera.aspect = aspect;
+                terminalCamera.updateProjectionMatrix();
+                terminalRenderer.setSize(container.clientWidth, container.clientHeight, false);
+            }
+        });
+
+        // Click outside to close model info
+        window.addEventListener('click', (event) => {
+            const modelInfo = document.getElementById('modelInfo');
+            if (modelInfo.classList.contains('pinned') && 
+                !modelInfo.contains(event.target)) {
+                modelInfo.classList.remove('pinned');
+                modelInfo.style.display = 'none';
+            }
+        });
+
+        // Initialize the application
+        init().catch(error => {
+            console.error('Initialization failed:', error);
+            document.getElementById('loadingScreen').style.display = 'none';
+            document.getElementById('errorMessage').style.display = 'block';
+        });
+    </script>
+</body>
+</html>

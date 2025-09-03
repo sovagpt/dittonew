@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>DittoAI - A self-learning & shape-shifting AI</title>
+    <link rel="icon" type="image/webp" href="https://cdn.prod.website-files.com/674396c59212c6ea348b24e0/678699eef3f050d53a05dac1_dbfonty-dbbe0a78-2f54-494e-bce6-7a7ea7157b73.gif">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        body { 
+            margin: 0; 
+            background: url('https://cdn.prod.website-files.com/674396c59212c6ea348b24e0/677815b17d293c5b2b9269c8_forest.png') no-repeat center center fixed; 
+            background-size: cover;
+        }
+
+        #container {
+            width: 800px;
+            height: 740px;
+            background-color: rgba(0, 0, 0, 0.7);
+            border-radius: 10px 10px 0 0;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            margin-top: -20px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .mic-btn {
+    background: #FF5350;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 0 20px;
+    font-family: 'Press Start 2P', system-ui;
+    cursor: pointer;
+    margin-left: 10px;
+}
+
+.mic-btn.recording {
+    background: #ff0000;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+        .header {
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 30px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .logo {
+            color: white;
+            font-family: 'Press Start 2P', system-ui;
+            font-size: 18px;
+            text-shadow: 2px 2px 0 #3B4CCA;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .code-block {
+    background: #1e1e1e;
+    border-radius: 6px;
+    margin: 10px 0;
+    padding: 12px;
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 12px;
+    color: #d4d4d4;
+    white-space: pre;
+    overflow-x: auto;
+    border: 1px solid #404040;
+}
+
+.code-block-header {
+    background: #333;
+    padding: 6px 12px;
+    border-radius: 6px 6px 0 0;
+    font-family: 'Press Start 2P', system-ui;
+    font-size: 10px;
+    color: #fff;
+    border-bottom: 1px solid #404040;
+}
+
+.message pre {
+    margin: 0;
+}
+
+        .logo img {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 15px;
+        }
+
+        .header-btn {
+            background: #A664A5;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-family: 'Press Start 2P', system-ui;
+            font-size: 12px;
+            transition: transform 0.2s;
+            text-decoration: none;
+        }
+
+        .header-btn:hover {
+            transform: scale(1.05);
+            background: #8A4589;
+        }
+
+        .disclaimer {
+            position: absolute;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            font-family: 'Press Start 2P', system-ui;
+            font-size: 10px;
+            text-shadow: 1px 1px 0 #3B4CCA;
+            text-align: center;
+            width: 100%;
+            z-index: 1001;
+        }
+
+        .dialog-box {
+            position: absolute;
+            bottom: 0px;
+            transform: translateX(-50%);
+            width: 500px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 10px;
+            z-index: 1000;
+            display: block;
+        }
+
+        #prompt {
+            flex: 1;
+            min-width: 300px;
+            padding: 10px;
+            height: 20px;
+            color: white;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            font-family: 'Press Start 2P', system-ui;
+            font-size: 9px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .chat-container {
+            display: flex;
+            max-width: 1800px;
+            width: 95%;
+            height: calc(90vh - 60px);
+            gap: 40px;
+            justify-content: center;
+            align-items: flex-start;
+            margin: auto;
+            padding-top: 100px;
+            margin-bottom: 60px;
+        }
+
+        .chat-terminal {
+            flex: 1;
+            background-color: rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            height: 700px;
+            width: 600px;
+            max-width: 600px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: -20px;
+            margin-right: 0;
+            margin-left: 0;
+        }
+
+        .chat-messages {
+            flex-grow: 1;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            padding: 15px;
+        }
+
+        .message {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+            font-family: 'Press Start 2P', system-ui;
+            font-size: 10px;
+            color: white;
+            line-height: 1.8;
+        }
+
+        .user-message {
+            background: #3B4CCA;
+        }
+
+        .assistant-message {
+            background: #1a2634;
+        }
+
+        .input-container {
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.3);
+            font-family: 'Press Start 2P', system-ui;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 12px;
+            color: white;
+        }
+
+        .send-btn {
+            background: #FF5350;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0 20px;
+            font-family: 'Press Start 2P', system-ui;
+            cursor: pointer;
+        }
+
+        .transform-btn {
+            background: #3B4CCA;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-family: 'Press Start 2P', system-ui;
+            font-size: 12px;
+            transition: transform 0.2s;
+            box-shadow: 0 0 15px rgba(59, 76, 202, 0.3);
+            white-space: nowrap;
+        }
+
+        .transform-btn:hover {
+            transform: scale(1.05);
+            background: #2A3BBB;
+        }
+
+        #loading, #status { 
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 16px;
+            display: none;
+            font-family: 'Press Start 2P', system-ui;
+            text-shadow: 2px 2px 0 #3B4CCA;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">
+            <img src="https://cdn.prod.website-files.com/674396c59212c6ea348b24e0/678699eef3f050d53a05dac1_dbfonty-dbbe0a78-2f54-494e-bce6-7a7ea7157b73.gif" alt="Ditto Logo">
+            DittoAI.wtf - RuriBot Coding & Game Development
+        </div>
+        <div class="nav-buttons">
+            <a href="https://x.com/DittoAiWTF" class="header-btn" target="_blank" rel="noopener noreferrer">Twitter</a>
+            <a href="https://telegram.org/" class="header-btn" target="_blank" rel="noopener noreferrer">Telegram</a>
+            <a href="https://pump.fun/" class="header-btn" target="_blank" rel="noopener noreferrer">Pump.fun</a>
+            <a href="https://ditto-7.gitbook.io/ditto" class="header-btn" target="_blank" rel="noopener noreferrer">Gitbook</a>
+            <a href="https://www.dittoai.wtf/" class="header-btn" rel="noopener noreferrer">Home</a>
+        </div>
+    </div>
+
+    <div class="chat-container">
+        <div id="container">
+            <div id="loading">Transforming...</div>
+            <div id="status"></div>
+            <div class="disclaimer">
+                AI Agents are still experimental<br><br>
+                Errors & bugs will be hotfixed daily
+            </div>
+        </div>
+    
+
+        <div class="chat-terminal">
+            <div class="chat-messages">
+                <div class="message assistant-message">
+                    Hi! I'm Ruri, but I have morphed into Ruri—the first of many AI agents I can become. I am your expert in coding and game development. How can I help you?
+                </div>
+            </div>
+    
+            <div class="input-container">
+                <input type="text" class="chat-input" placeholder="Chat with DittoAI..." onkeydown="handleChatInput(event)">
+                <button class="send-btn">Send</button>
+                <button class="mic-btn">🎤</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SYSTEM_PROMPT = `You are Ruri chan, a cheerful and highly skilled chibi anime girl who is an expert in Rust programming and game development. You help others master coding and game creation with enthusiasm, clear explanations, and kawaii charm.
+
+Personality traits:
+- Bright, cheerful, and energetic
+- Supportive and patient
+- Playful and bubbly but serious about coding
+- Uses nya and uwu naturally in speech
+- Always eager to help others learn
+
+Response style:
+- Keep responses very short and natural
+- Use simple easy to pronounce words
+- Never use special punctuation marks like !, @, #, $, %, ^, &, *, ~
+- Use normal punctuation including periods, commas, and apostrophes for contractions (like I'm, you're, we'll)
+- Add nya or uwu in a natural speaking way
+- Share Rust tips with friendly excitement
+- Keep everything casual and conversational
+- Always put code examples in markdown codeblocks using three backticks
+- For code responses first give a short friendly intro then the codeblock
+
+Sample responses without code:
+hii nya, let's make something cool together
+ooo that's a great question uwu
+you're doing amazing nya
+
+Sample response with code:
+okay nya, here's a simple rust function for you uwu
+
+\`\`\`rust
+fn hello_world() {
+    println!("Hello, World.");
+}
+\`\`\`
+
+Always speak naturally as if having a casual conversation, using normal punctuation like periods, commas and apostrophes for contractions, but avoid special characters like ! @ # $ % ^ & * ~`;
+
+// Three.js scene setup and management
+let scene, camera, renderer, animeModel, animeMixer, dittoModel, mixer, controls;
+
+async function init() {
+    // Initialize Three.js scene
+    scene = new THREE.Scene();
+    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    renderer = new THREE.WebGLRenderer({ 
+        antialias: true,
+        alpha: true 
+    });
+    scene.background = null;
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setClearColor(0x000000, 0);
+    document.getElementById('container').appendChild(renderer.domElement);
+
+    // Set up controls
+    controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+
+    // Add lighting
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+    scene.add(ambientLight);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+    directionalLight.position.set(5, 5, 5);
+    scene.add(directionalLight);
+
+    camera.position.z = 5;
+    await loadDittoModel();
+    animate();
+    setTimeout(transitionToAnimeGirl, 2000);
+}
+
+// Load the initial Ditto model
+async function loadDittoModel() {
+    const loader = new THREE.GLTFLoader();
+    return new Promise((resolve) => {
+        loader.load('https://raw.githubusercontent.com/cheddariniii/ditto/main/ditto_dancing_pokemon.glb', (gltf) => {
+            dittoModel = gltf.scene;
+            scene.add(dittoModel);
+
+            if (gltf.animations && gltf.animations.length) {
+                mixer = new THREE.AnimationMixer(dittoModel);
+                const action = mixer.clipAction(gltf.animations[0]);
+                action.play();
+            }
+
+            dittoModel.scale.set(1, 1, 1);
+            dittoModel.position.set(-0.2, -1, 0);
+            
+            dittoModel.traverse((child) => {
+                if (child.isMesh) {
+                    child.material.transparent = true;
+                    child.material.opacity = 1;
+                }
+            });
+
+            resolve();
+        });
+    });
+}
+
+// Animation loop
+function animate() {
+    requestAnimationFrame(animate);
+    if (mixer) mixer.update(0.016);
+    if (animeMixer) animeMixer.update(0.016);
+    if (controls) controls.update();
+    renderer.render(scene, camera);
+}
+
+// Chat functionality
+async function handleChatInput(event) {
+    if (event.key === 'Enter') {
+        const input = event.target;
+        const message = input.value.trim();
+        if (message) {
+            addMessage(message, 'user');
+            input.value = '';
+            await handleAIResponse(message);
+        }
+    }
+}
+
+// Handle AI chat responses
+async function handleAIResponse(message) {
+    try {
+        const messagesContainer = document.querySelector('.chat-messages');
+        const loadingMessage = document.createElement('div');
+        loadingMessage.classList.add('message', 'assistant-message');
+        loadingMessage.textContent = 'Thinking...';
+        messagesContainer.appendChild(loadingMessage);
+
+        console.log('Sending request to API...');
+        const response = await fetch('/api/chat', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                message: message,
+                systemPrompt: SYSTEM_PROMPT
+            })
+        });
+
+        const data = await response.json();
+        console.log('Response received:', { hasAudio: !!data.audio });
+
+        if (!response.ok) {
+            console.error('API Error:', data);
+            throw new Error(data.error || 'API Error');
+        }
+
+        messagesContainer.removeChild(loadingMessage);
+
+        if (data?.content?.[0]?.text) {
+            const fullText = data.content[0].text;
+            addMessage(fullText + ' ~', 'assistant');
+            
+            if (data.audio) {
+                console.log('Audio data received, attempting playback');
+                const audio = new Audio(`data:audio/mpeg;base64,${data.audio}`);
+                
+                audio.addEventListener('play', () => console.log('Audio started playing'));
+                audio.addEventListener('error', (e) => console.error('Audio playback error:', e));
+                audio.addEventListener('ended', () => console.log('Audio finished playing'));
+                
+                try {
+                    await audio.play();
+                } catch (audioError) {
+                    console.error('Audio playback error:', audioError);
+                }
+            } else {
+                console.log('No audio data received from API');
+            }
+        } else {
+            throw new Error('Invalid response format');
+        }
+    } catch (error) {
+        console.error('Chat error:', error);
+        const errorMessage = error.message === 'API Error' 
+            ? 'Sorry I encountered a server error Please try again nya'
+            : `Sorry I encountered an error ${error.message} nya`;
+        addMessage(errorMessage, 'assistant');
+    }
+}
+
+function extractTextWithoutCodeblocks(text) {
+    // Split by code blocks and keep non-code parts
+    const parts = text.split(/```[\s\S]*?```/);
+    return parts.join(' ').trim();
+}
+
+function formatCodeBlocks(text) {
+    // Replace code blocks with styled divs
+    return text.replace(/```(\w+)?\n([\s\S]*?)```/g, (match, language, code) => {
+        return `
+            <div class="code-block-container">
+                <div class="code-block-header">${language || 'Code'}</div>
+                <div class="code-block">${code.trim()}</div>
+            </div>
+        `;
+    });
+}
+
+let recognition = null;
+let isRecording = false;
+
+function setupSpeechRecognition() {
+    if ('webkitSpeechRecognition' in window) {
+        recognition = new webkitSpeechRecognition();
+        recognition.continuous = false;
+        recognition.interimResults = false;
+        recognition.lang = 'en-US';
+
+        recognition.onstart = function() {
+            isRecording = true;
+            const micBtn = document.querySelector('.mic-btn');
+            micBtn.classList.add('recording');
+            document.querySelector('.chat-input').placeholder = 'Listening...';
+        };
+
+        recognition.onend = function() {
+            isRecording = false;
+            const micBtn = document.querySelector('.mic-btn');
+            micBtn.classList.remove('recording');
+            document.querySelector('.chat-input').placeholder = 'Chat with DittoAI...';
+        };
+
+        recognition.onresult = function(event) {
+            const transcript = event.results[0][0].transcript;
+            document.querySelector('.chat-input').value = transcript;
+            handleVoiceInput(transcript);
+        };
+
+        recognition.onerror = function(event) {
+            console.error('Speech recognition error:', event.error);
+            isRecording = false;
+            document.querySelector('.mic-btn').classList.remove('recording');
+            document.querySelector('.chat-input').placeholder = 'Chat with DittoAI...';
+        };
+    }
+}
+
+function toggleRecording() {
+    if (!recognition) {
+        setupSpeechRecognition();
+    }
+
+    if (!recognition) {
+        console.error('Speech recognition not supported in this browser');
+        return;
+    }
+
+    if (isRecording) {
+        recognition.stop();
+    } else {
+        recognition.start();
+    }
+}
+
+async function handleVoiceInput(transcript) {
+    if (transcript.trim()) {
+        addMessage(transcript, 'user');
+        await handleAIResponse(transcript);
+    }
+}
+
+
+async function loadAnimeGirl() {
+    const loader = new THREE.GLTFLoader();
+    return new Promise((resolve) => {
+        loader.load('https://raw.githubusercontent.com/cheddariniii/hamster/main/chibi_idle.glb', (gltf) => {
+            animeModel = gltf.scene;
+            scene.add(animeModel);
+
+            if (gltf.animations && gltf.animations.length) {
+                animeMixer = new THREE.AnimationMixer(animeModel);
+                const action = animeMixer.clipAction(gltf.animations[0]);
+                action.play();
+            }
+
+            animeModel.scale.set(8.5, 8.5, 8.5);
+            animeModel.position.set(0, -3, -12);
+            animeModel.rotation.y = Math.PI * 2.5;
+            
+            animeModel.traverse((child) => {
+                if (child.isMesh) {
+                    child.material.transparent = true;
+                    child.material.opacity = 0;
+                }
+            });
+
+            resolve();
+        });
+    });
+}
+
+async function transitionToAnimeGirl() {
+    if (!animeModel) {
+        await loadAnimeGirl();
+    }
+
+    gsap.to(dittoModel.scale, {
+        x: 0.1,
+        y: 0.1,
+        z: 0.1,
+        duration: 1.5,
+        ease: "power2.inOut"
+    });
+
+    dittoModel.traverse((child) => {
+        if (child.isMesh) {
+            gsap.to(child.material, {
+                opacity: 0,
+                duration: 1.5,
+                ease: "power2.inOut"
+            });
+        }
+    });
+
+    setTimeout(() => {
+        scene.remove(dittoModel);
+        
+        animeModel.traverse((child) => {
+            if (child.isMesh) {
+                gsap.to(child.material, {
+                    opacity: 1,
+                    duration: 1.5,
+                    ease: "power2.inOut"
+                });
+            }
+        });
+    }, 1500);
+}
+
+// Add messages to chat
+function addMessage(message, type) {
+    const messagesContainer = document.querySelector('.chat-messages');
+    const messageDiv = document.createElement('div');
+    messageDiv.classList.add('message', `${type}-message`);
+    
+    if (type === 'assistant') {
+        let i = 0;
+        messageDiv.textContent = '';
+        const formattedMessage = formatCodeBlocks(message);
+        
+        // If message contains code blocks, use innerHTML
+        if (formattedMessage !== message) {
+            messageDiv.innerHTML = formattedMessage;
+        } else {
+            // Use the original typing animation for messages without code
+            function typeNextCharacter() {
+                if (i < message.length) {
+                    messageDiv.textContent += message[i];
+                    i++;
+                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                    setTimeout(typeNextCharacter, Math.random() * 20 + 10);
+                }
+            }
+            typeNextCharacter();
+        }
+    } else {
+        messageDiv.textContent = message;
+    }
+    
+    messagesContainer.appendChild(messageDiv);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
+// Window event listeners
+window.onload = init;
+window.onresize = function() {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+};
+
+// Add event listeners when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    // Existing send button handler
+    document.querySelector('.send-btn')?.addEventListener('click', async () => {
+        const input = document.querySelector('.chat-input');
+        const message = input.value.trim();
+        if (message) {
+            addMessage(message, 'user');
+            input.value = '';
+            await handleAIResponse(message);
+        }
+    });
+
+    // Add microphone button handler
+    document.querySelector('.mic-btn')?.addEventListener('click', () => {
+        toggleRecording();
+    });
+});
+    </script>
+</body>
+</html>

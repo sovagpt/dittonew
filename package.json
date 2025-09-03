@@ -1,0 +1,20 @@
+{
+  "name": "dittoai",
+  "version": "1.0.0",
+  "description": "DittoAI - Text to 3D Object",
+  "main": "index.js",
+  "dependencies": {
+    "mongodb": "^6.3.0"
+  },
+  "scripts": {
+    "start": "node api/index.js"
+  },
+  "keywords": [
+    "ditto",
+    "3d",
+    "ai",
+    "meshy"
+  ],
+  "author": "",
+  "license": "ISC"
+}

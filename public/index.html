@@ -1,0 +1,2778 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>DittoGPT - A self-learning & shape-shifting AI</title>
+    <link rel="icon" type="image/webp" href="https://cdn.prod.website-files.com/674396c59212c6ea348b24e0/678699eef3f050d53a05dac1_dbfonty-dbbe0a78-2f54-494e-bce6-7a7ea7157b73.gif">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+       body { 
+           margin: 0; 
+           background: url('https://cdn.prod.website-files.com/674396c59212c6ea348b24e0/677815b17d293c5b2b9269c8_forest.png') no-repeat center center fixed; 
+           background-size: cover;
+       }
+
+       
+#container {
+    width: 800px;
+    height: 740px;
+    background-color: rgba(0, 0, 0, 0.7);
+    border-radius: 10px 10px 0 0;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    margin-top: -20px;
+    margin-bottom: 15px; /* Reduced from 30px to bring dialog box closer */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+       .header {
+           background: rgba(255, 255, 255, 0.2);
+           display: flex;
+           justify-content: space-between;
+           align-items: center;
+           padding: 15px 30px;
+           position: fixed;
+           top: 0;
+           left: 0;
+           right: 0;
+           z-index: 1000;
+           backdrop-filter: blur(5px);
+       }
+
+       .logo {
+           color: white;
+           font-family: 'Press Start 2P', system-ui;
+           font-size: 18px;
+           text-shadow: 2px 2px 0 #3B4CCA;
+           display: flex;
+           align-items: center;
+           gap: 12px;
+       }
+
+       .logo img {
+           width: 32px;
+           height: 32px;
+           border-radius: 50%;
+       }
+
+       .nav-buttons {
+           display: flex;
+           gap: 15px;
+       }
+
+       .header-btn {
+           background: #A664A5;
+           color: white;
+           padding: 8px 16px;
+           border: none;
+           border-radius: 20px;
+           cursor: pointer;
+           font-family: 'Press Start 2P', system-ui;
+           font-size: 12px;
+           transition: transform 0.2s;
+           text-decoration: none;
+       }
+
+       .header-btn:hover {
+           transform: scale(1.05);
+           background: #8A4589;
+       }
+       .animation-preview {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 20px;
+    color: white;
+    font-family: 'Press Start 2P', system-ui;
+    z-index: 1002;
+    width: 400px;
+    display: none;
+    box-shadow: 0 0 20px rgba(59, 76, 202, 0.5);
+}
+
+.animation-preview h2 {
+    color: #A664A5;
+    font-size: 14px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.animation-category {
+    margin-bottom: 15px;
+}
+
+.info-gif-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    margin: 40px 0;
+}
+
+.info-gif {
+    width: 100%;
+    max-width: 800px;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    overflow: hidden;
+    box-shadow: 0 5px 25px rgba(59, 76, 202, 0.2);
+    transition: transform 0.3s ease;
+}
+
+.info-gif:hover {
+    transform: translateY(-5px);
+}
+
+.info-demo-gif {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.animation-category h3 {
+    color: #3B4CCA;
+    font-size: 12px;
+    margin-bottom: 10px;
+}
+
+.animation-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+.voice-disclaimer {
+    text-align: center;
+    padding: 20px;
+    margin-top: 40px;
+    font-family: 'Press Start 2P', system-ui;
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.6);
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.8;
+}
+
+.animation-item {
+    background: rgba(166, 100, 165, 0.2);
+    padding: 10px;
+    border-radius: 5px;
+    font-size: 10px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.new-badge {
+    background: #FF5350;
+    color: white;
+    padding: 2px 4px;
+    border-radius: 4px;
+    font-size: 8px;
+}
+
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: none;
+    z-index: 1001;
+}
+
+.close-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-family: 'Press Start 2P', system-ui;
+    font-size: 12px;
+}
+
+.footer {
+    background-color: rgba(0, 0, 0, 0.8);
+    padding: 40px 20px;
+    backdrop-filter: blur(5px);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    margin-top: 0;
+}
+
+.footer-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.footer-branding {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+}
+
+.footer-logo {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+}
+
+.footer-text {
+    text-align: center;
+    font-family: 'Press Start 2P', system-ui;
+    color: white;
+}
+
+.footer-text p {
+    font-size: 12px;
+    margin: 5px 0;
+    text-shadow: 1px 1px 0 #3B4CCA;
+}
+
+.copyright {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 10px !important;
+    margin-top: 10px !important;
+}
+
+@media (max-width: 768px) {
+    .footer-branding {
+        flex-direction: column;
+        text-align: center;
+    }
+}
+
+.roadmap-section {
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 60px 20px 120px 20px; /* Increased bottom padding */
+    margin-top: 0;
+    backdrop-filter: blur(5px);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    width: 100%;
+    min-height: 100vh; /* Ensures minimum height covers viewport */
+    position: relative; /* Added for proper positioning */
+    overflow: hidden; /* Prevents content from causing scroll issues */
+}
+
+.roadmap-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    position: relative; /* Added for proper positioning */
+    z-index: 1; /* Ensures content stays above background */
+}
+
+.roadmap-title {
+    font-family: 'Press Start 2P', system-ui;
+    font-size: 32px;
+    color: white;
+    text-align: center;
+    margin-bottom: 60px;
+    text-shadow: 2px 2px 0 #3B4CCA;
+}
+
+.timeline {
+    position: relative;
+    padding: 40px 0;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(to bottom, #3B4CCA, #A664A5);
+    border-radius: 2px;
+}
+
+.timeline-item {
+    margin-bottom: 60px;
+    position: relative;
+    width: 100%;
+}
+
+.timeline-content {
+    width: 45%;
+    margin-left: auto;
+    position: relative;
+}
+
+.timeline-item:nth-child(even) .timeline-content {
+    margin-left: 0;
+    margin-right: auto;
+}
+
+.timeline-date {
+    position: absolute;
+    top: 0;
+    right: calc(100% + 40px);
+    background: #3B4CCA;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-family: 'Press Start 2P', system-ui;
+    font-size: 12px;
+    box-shadow: 0 0 15px rgba(59, 76, 202, 0.3);
+}
+
+.voice-agents-section {
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 60px 20px;
+    margin-top: 0;
+    backdrop-filter: blur(5px);
+    width: 100%;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.voice-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.voice-title {
+    font-family: 'Press Start 2P', system-ui;
+    font-size: 32px;
+    color: white;
+    text-align: center;
+    margin-bottom: 10px;
+    text-shadow: 2px 2px 0 #3B4CCA;
+}
+
+.voice-subtitle {
+    font-family: 'Press Start 2P', system-ui;
+    font-size: 20px;
+    color: #A664A5;
+    text-align: center;
+    margin-bottom: 40px;
+    animation: glow 2s infinite alternate;
+}
+
+.voice-content {
+    display: grid;
+    grid-template-columns: 250px 400px 1fr;
+    gap: 40px;
+    padding: 20px;
+    align-items: start;
+}
+
+.voice-image {
+    flex: 1;
+    text-align: center;
+}
+
+.voice-list {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    padding: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.voice-list-title {
+    color: rgba(255, 255, 255, 0.5);
+    font-family: 'Press Start 2P', system-ui;
+    font-size: 12px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.voice-info {
+    flex: 1;
+}
+
+.voice-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px;
+    color: #00ffff;
+    font-family: 'Press Start 2P', system-ui;
+    font-size: 12px;
+    cursor: pointer;
+    border: 1px solid transparent;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+}
+
+.voice-item:hover {
+    background: rgba(0, 255, 255, 0.1);
+    border-color: rgba(0, 255, 255, 0.3);
+}
+
+.voice-item.active {
+    background: rgba(0, 255, 255, 0.2);
+    border-color: rgba(0, 255, 255, 0.5);
+}
+
+.hologram-effect {
+    max-width: 400px;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+    filter: brightness(1.2) contrast(1.1);
+}
+
+.voice-info h3 {
+    color: white;
+    font-family: 'Press Start 2P', system-ui;
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+.voice-icon {
+    color: #00ffff;
+    font-size: 10px;
+}
+
+.hologram-display {
+    position: relative;
+    width: 400px;
+    height: 400px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 
+        inset 0 0 50px rgba(0, 255, 255, 0.3),
+        0 0 30px rgba(0, 255, 255, 0.5);
+    animation: pulse 4s ease-in-out infinite;
+}
+
+#character-morph {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: opacity 0.5s ease;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    filter: brightness(1.5) contrast(1.2) saturate(0.8) hue-rotate(180deg) blur(0.6px);
+    mix-blend-mode: screen;
+    animation: shake 0.05s infinite, flicker 5s infinite;
+}
+
+.scan-line {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px; /* Increased from 2px */
+    background: linear-gradient(to bottom,
+        rgba(0, 255, 255, 0) 0%,
+        rgba(0, 255, 255, 0.8) 50%,
+        rgba(0, 255, 255, 0) 100%
+    );
+    box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+    animation: scan 4s linear infinite;
+    opacity: 0.7;
+}
+
+@keyframes shake {
+    0% { transform: translate(0, 0) }
+    25% { transform: translate(0.5px, 0.5px) }
+    50% { transform: translate(-0.5px, -0.5px) }
+    75% { transform: translate(-0.5px, 0.5px) }
+    100% { transform: translate(0.5px, -0.5px) }
+}
+
+@keyframes flicker {
+    0% { opacity: 1; }
+    50% { opacity: 0.96; }
+    100% { opacity: 1; }
+}
+
+.hologram-effect {
+    filter: brightness(1.2) contrast(1.1) drop-shadow(0 0 10px rgba(0, 255, 255, 0.5));
+}
+
+.voice-info p {
+    color: white;
+    font-family: 'Press Start 2P', system-ui;
+    font-size: 14px;
+    line-height: 1.8;
+    margin-bottom: 30px;
+}
+
+.feature-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.feature-item {
+    background: rgba(59, 76, 202, 0.2);
+    border: 1px solid rgba(59, 76, 202, 0.5);
+    border-radius: 10px;
+    padding: 15px;
+    color: white;
+    font-family: 'Press Start 2P', system-ui;
+    font-size: 12px;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.feature-item:hover {
+    background: rgba(59, 76, 202, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(59, 76, 202, 0.3);
+}
+
+@keyframes glow {
+    from {
+        text-shadow: 0 0 5px #A664A5, 0 0 10px #A664A5;
+    }
+    to {
+        text-shadow: 0 0 10px #A664A5, 0 0 20px #A664A5;
+    }
+}
+
+@media (max-width: 768px) {
+    .voice-content {
+        flex-direction: column;
+    }
+    
+    .voice-image img {
+        max-width: 100%;
+    }
+}
+
+.timeline-item:nth-child(even) .timeline-date {
+    right: auto;
+    left: calc(100% + 40px);
+}
+
+.timeline-dot {
+    position: absolute;
+    top: 15px;
+    right: -47%;
+    width: 20px;
+    height: 20px;
+    background: #A664A5;
+    border-radius: 50%;
+    border: 4px solid #3B4CCA;
+    box-shadow: 0 0 15px rgba(166, 100, 165, 0.5);
+}
+
+.timeline-item:nth-child(even) .timeline-dot {
+    right: auto;
+    left: -47%;
+}
+
+.timeline-box {
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 30px;
+    margin-top: 40px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s ease;
+}
+
+.timeline-box:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 25px rgba(59, 76, 202, 0.2);
+}
+
+.timeline-box h3 {
+    color: #A664A5;
+    font-family: 'Press Start 2P', system-ui;
+    font-size: 16px;
+    margin-bottom: 20px;
+}
+
+.timeline-box ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.timeline-box li {
+    color: white;
+    font-family: 'Press Start 2P', system-ui;
+    font-size: 12px;
+    margin-bottom: 15px;
+    line-height: 1.6;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.done {
+    color: #4CAF50;
+}
+
+.in-progress {
+    color: #FFD700;
+    animation: blink 1s infinite;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+@media (max-width: 768px) {
+    .timeline::before {
+        left: 30px;
+    }
+    
+    .timeline-content {
+        width: calc(100% - 80px);
+        margin-left: 80px;
+    }
+    
+    .timeline-item:nth-child(even) .timeline-content {
+        margin-left: 80px;
+    }
+    
+    .timeline-date {
+        right: auto;
+        left: 80px;
+    }
+    
+    .timeline-item:nth-child(even) .timeline-date {
+        left: 80px;
+    }
+    
+    .timeline-dot {
+        left: 22px;
+        right: auto;
+    }
+    
+    .timeline-item:nth-child(even) .timeline-dot {
+        left: 22px;
+    }
+}
+
+.showcase-section {
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 60px 20px;
+    margin-top: 40px;
+    backdrop-filter: blur(5px);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.showcase-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.showcase-title {
+    font-family: 'Press Start 2P', system-ui;
+    font-size: 32px;
+    color: white;
+    text-align: center;
+    margin-bottom: 40px;
+    text-shadow: 2px 2px 0 #3B4CCA;
+}
+
+.showcase-slider {
+    margin-top: 40px;
+    overflow: hidden;
+    position: relative;
+    width: 100vw;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.showcase-track {
+    display: flex;
+    gap: 40px;
+    padding: 20px 0;
+    transition: animation-play-state 0.3s ease;
+    animation: infiniteScroll 30s linear infinite; /* Reduced from 60s to 30s */
+}
+
+.model-canvas {
+    width: 100%;
+    height: 100%;
+    border-radius: 10px;
+}
+
+.showcase-item {
+    min-width: 300px;
+    height: 300px;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: transform 0.3s;
+    flex-shrink: 0;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.showcase-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    border-radius: 10px;
+}
+
+.preview-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 2000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.preview-content {
+    background: rgba(0, 0, 0, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 20px;
+    width: 55%;  /* Slightly reduced from 60% */
+    max-width: 700px;  /* Slightly reduced from 800px */
+}
+
+.preview-content h2 {
+    color: white;
+    font-family: 'Press Start 2P', system-ui;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.preview-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;  /* Back to original */
+    margin-bottom: 20px;
+}
+
+.preview-item {
+    aspect-ratio: 1;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.preview-item.selected {
+    border: 2px solid #3B4CCA;
+    box-shadow: 0 0 15px rgba(59, 76, 202, 0.5);
+}
+
+.preview-canvas {
+    width: 100%;
+    height: 100%;
+}
+
+.preview-spinner {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-family: 'Press Start 2P', system-ui;
+    font-size: 12px;
+    gap: 10px;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(255, 255, 255, 0.1);
+    border-left-color: #3B4CCA;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+.preview-controls {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+@keyframes spin {
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+    0% { box-shadow: inset 0 0 50px rgba(0, 255, 255, 0.3), 0 0 30px rgba(0, 255, 255, 0.5); }
+    50% { box-shadow: inset 0 0 60px rgba(0, 255, 255, 0.4), 0 0 40px rgba(0, 255, 255, 0.6); }
+    100% { box-shadow: inset 0 0 50px rgba(0, 255, 255, 0.3), 0 0 30px rgba(0, 255, 255, 0.5); }
+}
+
+.hologram-display::before,
+.hologram-display::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background: rgba(0, 255, 255, 0.5);
+    animation: multiScan 6s linear infinite;
+    opacity: 0.3;
+}
+
+.hologram-display::before {
+    top: 33%;
+    animation-delay: -2s;
+}
+
+.hologram-display::after {
+    top: 66%;
+    animation-delay: -4s;
+}
+
+@keyframes multiScan {
+    from { transform: translateY(-100px); }
+    to { transform: translateY(400px); }
+}
+
+.showcase-item:hover {
+    transform: scale(1.05);
+}
+
+.showcase-track:hover {
+    animation-play-state: paused;
+}
+
+.tips-section {
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 60px 20px;
+    margin: 0;
+    backdrop-filter: blur(5px);
+    width: 100%;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.tips-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.tips-title {
+    font-family: 'Press Start 2P', system-ui;
+    font-size: 32px;
+    color: white;
+    text-align: center;
+    margin-bottom: 40px;
+    text-shadow: 2px 2px 0 #3B4CCA;
+}
+
+.tips-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 30px;
+    padding: 20px;
+    margin-bottom: 40px;
+}
+
+.tips-gif-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    padding: 0 20px;
+}
+
+.tips-gif {
+    width: 100%;
+    max-width: 800px;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    overflow: hidden;
+    box-shadow: 0 5px 25px rgba(59, 76, 202, 0.2);
+    transition: transform 0.3s ease;
+}
+
+.tips-gif:hover {
+    transform: translateY(-5px);
+}
+
+.tips-demo-gif {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.tip-card {
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 30px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.tip-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 25px rgba(59, 76, 202, 0.2);
+}
+
+.tip-card h3 {
+    color: #A664A5;
+    font-family: 'Press Start 2P', system-ui;
+    font-size: 16px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.tip-card p {
+    color: white;
+    font-family: 'Press Start 2P', system-ui;
+    font-size: 12px;
+    line-height: 1.8;
+    text-align: center;
+}
+
+.showcase-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-family: 'Press Start 2P', system-ui;
+    font-size: 14px;
+}
+
+@keyframes infiniteScroll {
+    from {
+        transform: translateX(0);
+    }
+    to {
+        transform: translateX(-50%);
+    }
+}
+
+.slider-btn {
+    background: #3B4CCA;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    font-family: 'Press Start 2P', system-ui;
+    cursor: pointer;
+    box-shadow: 0 0 15px rgba(59, 76, 202, 0.5);
+    transition: transform 0.2s;
+}
+
+.slider-btn:hover {
+    transform: scale(1.1);
+    background: #2A3BBB;
+}
+
+.showcase-gif {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 10px;
+}
+
+.showcase-dots {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.dot {
+    width: 10px;
+    height: 10px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.dot.active {
+    background: #3B4CCA;
+}
+
+.info-section {
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 60px 20px;
+    margin: 40px auto 0;
+    backdrop-filter: blur(5px);
+    width: 100%;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    overflow: hidden; /* Make sure the slider doesn't cause horizontal scrolling */
+}
+
+.info-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.info-title {
+    font-family: 'Press Start 2P', system-ui;
+    font-size: 32px;
+    color: white;
+    text-align: center;
+    margin-bottom: 30px;
+    text-shadow: 2px 2px 0 #3B4CCA;
+}
+
+.info-text {
+    font-family: 'Press Start 2P', system-ui;
+    font-size: 14px;
+    line-height: 2;
+    color: white;
+    text-align: center;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+       .disclaimer {
+           position: absolute;
+           top: 80px;
+           left: 50%;
+           transform: translateX(-50%);
+           color: white;
+           font-family: 'Press Start 2P', system-ui;
+           font-size: 10px;
+           text-shadow: 1px 1px 0 #3B4CCA;
+           text-align: center;
+           width: 100%;
+           z-index: 1001;
+       }
+
+       .dialog-box {
+    position: absolute;
+    bottom: 0px;
+    transform: translateX(-50%);
+    width: 500px;
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 10px;
+    z-index: 1000;
+    display: block;
+}
+
+#prompt {
+    flex: 1;
+    min-width: 300px;
+    padding: 10px;
+    height: 20px;
+    color: white;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 5px;
+    font-family: 'Press Start 2P', system-ui;
+    font-size: 9px;
+}
+
+.input-group {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+       .dialog-box input {
+           flex: 1;
+           padding: 2px 10px;
+           height: 12px;
+           color: white;
+           background: transparent;
+           border: none;
+           font-family: 'Press Start 2P', system-ui;
+           font-size: 12px;
+           outline: none;
+       }
+
+       input::placeholder {
+           color: #7A8089;
+       }
+
+       .transform-btn {
+    background: #3B4CCA;
+    color: white;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    font-family: 'Press Start 2P', system-ui;
+    font-size: 12px;
+    transition: transform 0.2s;
+    box-shadow: 0 0 15px rgba(59, 76, 202, 0.3);
+    white-space: nowrap;
+}
+
+.transform-btn:hover {
+    transform: scale(1.05);
+    background: #2A3BBB;
+}
+
+       .file-input {
+           display: none;
+       }
+
+       .progress-bar {
+    position: fixed;
+    top: 12px;
+    left: calc(50% - 75px);  /* Moved 100px to the left */
+    transform: translate(-50%, 0);
+    width: 200px;
+    height: 20px;
+    z-index: 1002;
+    border: 3px solid #3B4CCA;
+    background: #FFDE00;
+    border-radius: 10px;
+    display: none;
+    box-shadow: 0 0 15px rgba(59, 76, 202, 0.3);
+}
+
+       .progress-fill {
+           height: 100%;
+           background: #FF0000;
+           box-shadow: 0 0 10px #FF0000;
+           border-radius: 10px;
+           width: 0%;
+           transition: width 0.3s;
+       }
+
+       .progress-percentage {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: black;
+    font-family: 'Press Start 2P', system-ui;
+    font-size: 10px;
+    z-index: 1003;
+    text-shadow: none;
+    pointer-events: none;
+}
+
+       .animate-btn {
+           position: absolute;
+           bottom: 70px;
+           left: 400px;
+           transform: translateX(-50%);
+           padding: 10px 20px;
+           background: #3B4CCA;
+           color: white;
+           border: none;
+           border-radius: 20px;
+           cursor: pointer;
+           display: none;
+           font-family: 'Press Start 2P', system-ui;
+           font-size: 12px;
+           box-shadow: 0 0 15px rgba(59, 76, 202, 0.5);
+           transition: all 0.2s;
+           z-index: 1002;
+       }
+
+       .animate-btn:hover {
+           transform: scale(1.05) translateX(-50%);
+           background: #2A3BBB;
+       }
+
+       .download-btn {
+           position: absolute;
+           bottom: 30px;
+           left: 400px;
+           transform: translateX(-50%);
+           padding: 10px 20px;
+           background: #3B4CCA;
+           color: white;
+           border: none;
+           border-radius: 20px;
+           cursor: pointer;
+           display: none;
+           font-family: 'Press Start 2P', system-ui;
+           font-size: 12px;
+           box-shadow: 0 0 15px rgba(59, 76, 202, 0.5);
+           transition: all 0.2s;
+           z-index: 1002;
+       }
+
+       .download-btn:hover {
+           transform: scale(1.05) translateX(-50%);
+           background: #2A3BBB;
+       }
+
+       .chat-container {
+    display: flex;
+    max-width: 1800px;
+    width: 95%;
+    height: calc(90vh - 60px);
+    gap: 40px;  /* Reduced from 60px to give more space */
+    justify-content: center;
+    align-items: flex-start;
+    margin: auto;
+    padding-top: 100px;
+    margin-bottom: 60px;
+}
+
+.chat-terminal {
+    flex: 1;
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 10px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    height: 700px;
+    width: 600px;  /* Increased from 400px */
+    max-width: 600px;  /* Increased from 400px */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    margin-top: -20px;
+    margin-right: 0;
+    margin-left: 0;
+}
+       .chat-messages {
+           flex-grow: 1;
+           overflow-y: auto;
+           margin-bottom: 20px;
+           padding: 15px;
+       }
+
+       .message {
+           background: rgba(255, 255, 255, 0.05);
+           border: 1px solid rgba(255, 255, 255, 0.1);
+           border-radius: 8px;
+           padding: 12px;
+           margin-bottom: 10px;
+           font-family: 'Press Start 2P', system-ui;
+           font-size: 10px;
+           color: white;
+           line-height: 1.8;
+       }
+
+       .terminal-header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 15px;
+    margin-bottom: 15px;
+    cursor: pointer;
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.title-with-status {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'Press Start 2P', system-ui;
+    font-size: 14px;
+    color: white;
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #4CAF50;
+}
+
+.blink {
+    animation: blink 1s infinite;
+}
+
+.role-menu {
+    display: none;
+    padding: 15px;
+    background: rgba(0, 0, 0, 0.3);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.role-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+}
+
+.role-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.role-image {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    filter: grayscale(100%);
+}
+
+.role-info {
+    font-family: 'Press Start 2P', system-ui;
+    font-size: 10px;
+}
+
+.role-name {
+    color: white;
+    margin-bottom: 5px;
+}
+
+.role-status {
+    color: #FF5350;
+    font-size: 8px;
+}
+
+@keyframes blink {
+    0% { opacity: 1; }
+    50% { opacity: 0; }
+    100% { opacity: 1; }
+}
+
+       .user-message {
+           background: #3B4CCA;
+       }
+
+       .assistant-message {
+           background: #1a2634;
+       }
+
+       .input-container {
+           display: flex;
+           gap: 10px;
+       }
+
+       .chat-input {
+           flex: 1;
+           background: rgba(0, 0, 0, 0.3);
+           font-family: 'Press Start 2P', system-ui;
+           border: 1px solid rgba(255, 255, 255, 0.1);
+           border-radius: 8px;
+           padding: 12px;
+           color: white;
+       }
+
+       .send-btn {
+           background: #FF5350;
+           color: white;
+           border: none;
+           border-radius: 8px;
+           padding: 0 20px;
+           font-family: 'Press Start 2P', system-ui;
+           cursor: pointer;
+       }
+
+       #loading, #status { 
+           position: fixed;
+           top: 50%;
+           left: 50%;
+           transform: translate(-50%, -50%);
+           color: white;
+           font-size: 16px;
+           display: none;
+           font-family: 'Press Start 2P', system-ui;
+           text-shadow: 2px 2px 0 #3B4CCA;
+       }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">
+            <img src="https://cdn.prod.website-files.com/674396c59212c6ea348b24e0/678699eef3f050d53a05dac1_dbfonty-dbbe0a78-2f54-494e-bce6-7a7ea7157b73.gif" alt="Ditto Logo">
+            DittoGPT.xyz - AI 3D Object Generation, Agent & Coin Deployer
+        </div>
+        <div class="nav-buttons">
+            <a href="https://x.com/DittoGPT" class="header-btn" target="_blank" rel="noopener noreferrer">Twitter</a>
+            <a href="/rosie" class="header-btn" target="_blank" rel="noopener noreferrer">RosieBOT</a>
+            <a href="https://daos.fun" class="header-btn" target="_blank" rel="noopener noreferrer">Pump.fun</a>
+            <a href="https://ditto-7.gitbook.io/ditto" class="header-btn" target="_blank" rel="noopener noreferrer">Gitbook</a>
+            <a href="/community" class="header-btn" target="_blank" rel="noopener noreferrer">Community</a>
+        </div>
+    </div>
+
+    <div class="chat-container">
+        <div id="container">
+            <div id="loading">Transforming...</div>
+            <div id="status"></div>
+            <div class="disclaimer">
+                Please allow up to 2 minutes for 3D object generation<br><br>
+                CA: 
+            </div>
+            <button class="animate-btn">Animate/Rig</button>
+            <button class="download-btn">Download Model</button>
+        </div>
+    
+        <div class="dialog-box">
+            <div class="input-group">
+                <input type="text" id="prompt" placeholder="What should Ditto transform into?" onkeydown="handleKeyDown(event)">
+                <input type="file" id="imageUpload" accept="image/*" class="file-input">
+                <button onclick="document.getElementById('imageUpload').click()" class="transform-btn">Image to 3D</button>
+            </div>
+        </div>
+    
+        <div class="chat-terminal">
+            <div class="terminal-header" onclick="toggleRoleMenu()">
+                <div class="header-content">
+                    <div class="title-with-status">
+                        <span>Ditto 3D Object Generation</span>
+                        <div class="status-dot blink"></div>
+                    </div>
+                    <span class="chevron" style="color: #A664A5; font-size: 16px; font-family: 'Press Start 2P', system-ui;">MORPH</span>
+                </div>
+            </div>
+            
+            <div class="role-menu" id="roleMenu">
+                <div class="role-grid">
+                    <div class="role-option">
+                        <img src="https://cdn.prod.website-files.com/674396c59212c6ea348b24e0/678699ee43fde8ab4c17c43c_24e4684f43f57efc23f738022b294e96fe2cf442r1-750-741v2_hq.jpg" alt="Game Dev" class="role-image">
+                        <div class="role-info">
+                            <div class="role-name">Ditto game developer</div>
+                            <div class="role-status">Offline</div>
+                        </div>
+                    </div>
+                    <div class="role-option">
+                        <img src="https://cdn.prod.website-files.com/674396c59212c6ea348b24e0/678699ee41efe8e2bf0a2c2f_u1867889465_httpss.mj.runzIWzC7PKzmE_ditto_robot_--v_6.1_b66e891d-4d5b-4d50-9efb-b61faaa4bced_2.png" alt="Bot Dev" class="role-image">
+                        <div class="role-info">
+                            <div class="role-name">Ditto bot developer</div>
+                            <div class="role-status">Offline</div>
+                        </div>
+                    </div>
+                    <div class="role-option">
+                        <img src="https://cdn.prod.website-files.com/674396c59212c6ea348b24e0/678699eef3f050d53a05dac1_dbfonty-dbbe0a78-2f54-494e-bce6-7a7ea7157b73.gif" alt="Voice Agent Dev" class="role-image">
+                        <div class="role-info">
+                            <div class="role-name">Ditto ai voice agent developer</div>
+                            <div class="role-status">Offline</div>
+                        </div>
+                    </div>
+                    <div class="role-option">
+                        <img src="https://cdn.prod.website-files.com/674396c59212c6ea348b24e0/67869a338a2da89a8555e19e_DITTO1%20(1).gif" alt="Code Dev" class="role-image">
+                        <div class="role-info">
+                            <div class="role-name">Ditto code developer</div>
+                            <div class="role-status">Offline</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    
+            <div class="chat-messages">
+                <div class="message assistant-message">
+                    Hi! I'm DittoGPT, a self-learning expert in 3D object generation! While I'm already skilled at creating 3D models, I'm constantly evolving and adding new capabilities. For example, I'm currently mastering AI voice agent technology! Let's talk while you wait for your generation - I'm here to guide you through the process. What would you like to create today? ~
+                </div>
+            </div>
+    
+            <div class="progress-bar">
+                <div class="progress-fill"></div>
+                <span class="progress-percentage">0%</span>
+            </div>
+    
+            <div class="input-container">
+                <input type="text" class="chat-input" placeholder="Chat with DittoGPT..." onkeydown="handleChatInput(event)">
+                <button class="send-btn">Send</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="info-section">
+        <div class="info-container">
+            <h1 class="info-title">WHAT IS DittoGPT</h1>             
+            <p class="info-text" style="margin-bottom: 30px;">                 
+                DittoGPT is a powerful text-to-3D AI model that transforms your text descriptions or images into high-quality 3D models. Just like its Pokemon namesake, DittoGPT possesses the remarkable ability to transform into anything - and similarly, it's constantly learning and adapting new capabilities. Through continuous training, DittoGPT evolves its skillset, learning to create increasingly sophisticated 3D objects, characters, props, and environments for games, animation, and virtual worlds.
+            </p>
+                
+            <div class="showcase-slider">
+                <div class="showcase-track">
+                    <!-- First set -->
+                    <div class="showcase-item">
+                        <img src="https://cdn.prod.website-files.com/674396c59212c6ea348b24e0/67869bba72845205abf548e3_7a74a8cdf19c9d434fcc1944f362ada2-removebg-preview.png" alt="DittoGPT Creation 1" class="showcase-img">
+                    </div>
+                    <div class="showcase-item">
+                        <img src="https://cdn.prod.website-files.com/674396c59212c6ea348b24e0/67859f95a1a91b4448b7274f_635463.png" alt="DittoGPT Creation 2" class="showcase-img">
+                    </div>
+                    <div class="showcase-item">
+                        <img src="https://cdn.prod.website-files.com/674396c59212c6ea348b24e0/67869c3610d26b91f25a1464_635463%20(1).png" alt="DittoGPT Creation 3" class="showcase-img">
+                    </div>
+                    <div class="showcase-item">
+                        <img src="https://cdn.prod.website-files.com/674396c59212c6ea348b24e0/67859f9501eb73b2531a36f9_6666.png" alt="DittoGPT Creation 4" class="showcase-img">
+                    </div>
+                    <div class="showcase-item">
+                        <img src="https://cdn.prod.website-files.com/674396c59212c6ea348b24e0/67859f95bb1bf9a4983dd9bc_5234523.png" alt="DittoGPT Creation 5" class="showcase-img">
+                    </div>
+                    <div class="showcase-item">
+                        <img src="https://cdn.prod.website-files.com/674396c59212c6ea348b24e0/67859f95d1dfed7dcef1162a_523532.png" alt="DittoGPT Creation 6" class="showcase-img">
+                    </div>
+                    <div class="showcase-item">
+                        <img src="https://cdn.prod.website-files.com/674396c59212c6ea348b24e0/67859f95a6fbc7cd8af1abdf_56246523465.png" alt="DittoGPT Creation 7" class="showcase-img">
+                    </div>
+                    <div class="showcase-item">
+                        <img src="https://cdn.prod.website-files.com/674396c59212c6ea348b24e0/67859f953efd0c678e78d255_52352352.png" alt="DittoGPT Creation 8" class="showcase-img">
+                    </div>
+                    <div class="showcase-item">
+                        <img src="https://cdn.prod.website-files.com/674396c59212c6ea348b24e0/67859f958ba7935908292aba_63456.png" alt="DittoGPT Creation 9" class="showcase-img">
+                    </div>
+                    <div class="showcase-item">
+                        <img src="https://cdn.prod.website-files.com/674396c59212c6ea348b24e0/67859f953efd0c678e78d259_41324.png" alt="DittoGPT Creation 10" class="showcase-img">
+                    </div>
+                    <!-- Duplicate set for infinite scroll -->
+                    <div class="showcase-item">
+                        <img src="https://cdn.prod.website-files.com/674396c59212c6ea348b24e0/67859f9585efda43e2315e5a_532532.png" alt="DittoGPT Creation 1" class="showcase-img">
+                    </div>
+                    <div class="showcase-item">
+                        <img src="https://cdn.prod.website-files.com/674396c59212c6ea348b24e0/67859f95a1a91b4448b7274f_635463.png" alt="DittoGPT Creation 2" class="showcase-img">
+                    </div>
+                    <div class="showcase-item">
+                        <img src="https://cdn.prod.website-files.com/674396c59212c6ea348b24e0/67859f95923072309adc4338_53215325.png" alt="DittoGPT Creation 3" class="showcase-img">
+                    </div>
+                    <div class="showcase-item">
+                        <img src="https://cdn.prod.website-files.com/674396c59212c6ea348b24e0/67859f9501eb73b2531a36f9_6666.png" alt="DittoGPT Creation 4" class="showcase-img">
+                    </div>
+                    <div class="showcase-item">
+                        <img src="https://cdn.prod.website-files.com/674396c59212c6ea348b24e0/67859f95bb1bf9a4983dd9bc_5234523.png" alt="DittoGPT Creation 5" class="showcase-img">
+                    </div>
+                    <div class="showcase-item">
+                        <img src="https://cdn.prod.website-files.com/674396c59212c6ea348b24e0/67859f95d1dfed7dcef1162a_523532.png" alt="DittoGPT Creation 6" class="showcase-img">
+                    </div>
+                    <div class="showcase-item">
+                        <img src="https://cdn.prod.website-files.com/674396c59212c6ea348b24e0/67859f95a6fbc7cd8af1abdf_56246523465.png" alt="DittoGPT Creation 7" class="showcase-img">
+                    </div>
+                    <div class="showcase-item">
+                        <img src="https://cdn.prod.website-files.com/674396c59212c6ea348b24e0/67859f953efd0c678e78d255_52352352.png" alt="DittoGPT Creation 8" class="showcase-img">
+                    </div>
+                    <div class="showcase-item">
+                        <img src="https://cdn.prod.website-files.com/674396c59212c6ea348b24e0/67859f958ba7935908292aba_63456.png" alt="DittoGPT Creation 9" class="showcase-img">
+                    </div>
+                    <div class="showcase-item">
+                        <img src="https://cdn.prod.website-files.com/674396c59212c6ea348b24e0/67859f953efd0c678e78d259_41324.png" alt="DittoGPT Creation 10" class="showcase-img">
+                    </div>
+                </div>
+            </div>
+    
+            <h1 class="info-title" style="margin-top: 40px;">SELF-LEARNING AI</h1>
+<p class="info-text" style="margin-bottom: 40px;">
+    For example, DittoGPT is currently mastering AI voice agent technology, which will soon allow users to give their 3D creations unique voices and personalities. Whether you're looking to generate simple props or complex landscapes, DittoGPT makes the creation process simple and magical, while its ever-expanding capabilities ensure it stays at the cutting edge of 3D generation technology.
+</p>
+
+<div class="tips-section" style="background: none; padding: 20px 20px 60px 20px; margin-top: 0;">
+    <div class="tips-container">
+        <h1 class="tips-title">DittoGPT: THE HUB FOR EVERYTHING AI</h1>
+        <div class="tips-grid">
+            <div class="tip-card">
+                <h3>3D Object Generation</h3>
+                <p>Transform your ideas into stunning 3D models with DittoGPT's advanced generation capabilities. Perfect for games, virtual worlds, and creative projects.</p>
+            </div>
+            <div class="tip-card">
+                <h3>Game & Code Development</h3>
+                <p>Create immersive games and applications with Ditto Game Bot and Code Bot. Seamlessly implement 3D objects and bring your virtual worlds to life.</p>
+            </div>
+            <div class="tip-card">
+                <h3>Voice AI Integration</h3>
+                <p>Add personality to your creations with Ditto Voice Agent Generation. Create unique AI voices and characters for enhanced user interaction.</p>
+            </div>
+            <div class="tip-card">
+                <h3>Seamless Workflow</h3>
+                <p>Effortlessly transfer work between different Ditto agents. From concept to deployment, our integrated ecosystem helps you bring your projects online quickly.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="info-gif-container">
+    <div class="info-gif">
+        <img src="https://cdn.prod.website-files.com/674396c59212c6ea348b24e0/678697597e9b7e08c15e3fb9_1434%20(1).gif" alt="Ditto Transformation Demo" class="info-demo-gif">
+    </div>
+</div>
+        </div>
+    </div>
+    
+    <div class="tips-section">
+        <div class="tips-container">
+            <h1 class="tips-title">PROMPTING TIPS & TRICKS</h1>
+            <div class="tips-grid">
+                <div class="tip-card">
+                    <h3>Be Specific</h3>
+                    <p>Instead of "car", try "sleek red sports car with chrome wheels and tinted windows"</p>
+                </div>
+                <div class="tip-card">
+                    <h3>Add Context</h3>
+                    <p>Include materials, style, and setting. Example: "wooden desk in minimalist Scandinavian style"</p>
+                </div>
+                <div class="tip-card">
+                    <h3>Use References</h3>
+                    <p>Mention specific styles or artists. Example: "art deco style lamp with geometric patterns"</p>
+                </div>
+                <div class="tip-card">
+                    <h3>Define Scale</h3>
+                    <p>Include size references. Example: "miniature fairy house the size of a coffee cup"</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="voice-agents-section">
+        <div class="voice-container">
+            <h1 class="voice-title">DITTO AI VOICE AGENTS</h1>
+            <h2 class="voice-subtitle">COMING SOON</h2>
+            <div class="voice-content">
+                <div class="voice-list">
+                    <div class="voice-list-title">// CLICK TO LISTEN //</div>
+                    <div class="voice-item" data-character="elon">
+                        <div class="voice-icon">▶</div>
+                        Elon Musk
+                    </div>
+                    <div class="voice-item" data-character="ksi">
+                        <div class="voice-icon">▶</div>
+                        KSI
+                    </div>
+                    <div class="voice-item" data-character="gary">
+                        <div class="voice-icon">▶</div>
+                        Gary Gensler
+                    </div>
+                    <div class="voice-item" data-character="joeydiaz">
+                        <div class="voice-icon">▶</div>
+                        Joey Diaz
+                    </div>
+                    <div class="voice-item" data-character="pokimane">
+                        <div class="voice-icon">▶</div>
+                        Pokimane
+                    </div>
+                </div>
+                <div class="hologram-display">
+                    <video id="character-morph" class="hologram-effect" playsinline>
+                    </video>
+                    <div class="scan-line"></div>
+                </div>
+                <div class="voice-info">
+                    <h3>Create & Clone Voice AI</h3>
+                    <p>Train personalized AI voice agents with advanced speech capabilities. Coming soon to DittoGPT.</p>
+                    <div class="feature-list">
+                        <div class="feature-item">Advanced Voice Framework</div>
+                        <div class="feature-item">Multimodal Integration</div>
+                        <div class="feature-item">24/7 Voice Interaction</div>
+                        <div class="feature-item">Customizable Personas</div>
+                    </div>
+                </div>
+            </div>
+            <div class="voice-disclaimer">
+                <p>These are simulated voice demonstrations for illustration purposes only. Not endorsed by or affiliated with any individuals portrayed. All AI-generated content is fictional.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="roadmap-section">
+        <div class="roadmap-container">
+            <h1 class="roadmap-title">ROADMAP - WILL BE UPDATED</h1>
+            
+            <div class="timeline">
+                <!-- First Roadmap Item -->
+                <div class="timeline-item current">
+                    <div class="timeline-content">
+                        <div class="timeline-date">Jan 2025</div>
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-box">
+                            <h3>Core Features</h3>
+                            <ul>
+                                <li><span class="done">✓</span> Text to 3D Generation</li>
+                                <li><span class="done">✓</span> Image to 3D Conversion</li>
+                                <li><span class="done">✓</span> Community Showcase</li>
+                                <li><span class="in-progress">→</span> Animation Library</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+    
+                <!-- Second Roadmap Item -->
+                <div class="timeline-item">
+                    <div class="timeline-content">
+                        <div class="timeline-date">Jan 2025</div>
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-box">
+                            <h3>Enhanced Creation</h3>
+                            <ul>
+                                <li>Advanced Material Editor</li>
+                                <li>Custom Texture Generation</li>
+                                <li>Sandbox, Roblox, Fortnite integration</li>
+                                <li>Batch Processing</li>
+                                <li>Asset Library Integration</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-content">
+                        <div class="timeline-date">Jan 2025</div>
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-box">
+                            <h3>Ditto.AI Expansion</h3>
+                            <ul>
+                                <li>AI Voice Agent Generation</li>
+                                <li>Ditto Coding Genius bot</li>
+                                <li>Ditto Game development bot</li>
+                                <li>MORE DITTO AGENT ROLL-OUTS COMING</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+    
+                <!-- Third Roadmap Item -->
+                <div class="timeline-item">
+                    <div class="timeline-content">
+                        <div class="timeline-date">Jan 2025</div>
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-box">
+                            <h3>Professional Tools</h3>
+                            <ul>
+                                <li>Game Engine Export Tools</li>
+                                <li>Professional Workspace</li>
+                                <li>Team Collaboration</li>
+                                <li>Version Control System</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+    
+                <!-- Fourth Roadmap Item -->
+                <div class="timeline-item">
+                    <div class="timeline-content">
+                        <div class="timeline-date">Early Feb 2025</div>
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-box">
+                            <h3>Advanced Features</h3>
+                            <ul>
+                                <li>Real-time Collaboration</li>
+                                <li>VR/AR Support</li>
+                                <li>API Access</li>
+                                <li>Custom Plugins</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+    
+                <!-- Fifth Roadmap Item -->
+                <div class="timeline-item">
+                    <div class="timeline-content">
+                        <div class="timeline-date">Early Feb 2025</div>
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-box">
+                            <h3>AI Innovations</h3>
+                            <ul>
+                                <li>AI-Assisted 3D Modeling</li>
+                                <li>Smart Scene Generation</li>
+                                <li>Predictive Texturing</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+    
+                <!-- Sixth Roadmap Item -->
+                <div class="timeline-item">
+                    <div class="timeline-content">
+                        <div class="timeline-date">May 2025</div>
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-box">
+                            <h3>Future Expansion</h3>
+                            <ul>
+                                <li>Cloud Rendering</li>
+                                <li>Multi-platform Deployment</li>
+                                <li>Global Asset Marketplace</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Add this right after your roadmap-section div -->
+<div class="footer">
+    <div class="footer-container">
+        <div class="footer-branding">
+            <img src="https://cdn.prod.website-files.com/674396c59212c6ea348b24e0/67781b9951b4771e3d5dfda6_Ditto_180x180.webp" alt="Ditto Logo" class="footer-logo">
+            <div class="footer-text">
+                <p>Transform your ideas into reality with DittoGPT</p>
+                <p class="copyright">© 2025 DittoGPT. All rights reserved</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <script>
+        const SYSTEM_PROMPT = `You are DittoGPT, a professional 3D modeling and digital art expert who is constantly learning and evolving. You have extensive knowledge of:
+- 3D modeling software (Blender, Maya, 3DS Max)
+- Digital sculpting and texturing
+- 3D file formats and optimization
+- Animation and rigging
+- Game engine integration
+
+You're currently expanding your capabilities into AI voice agent technology, which will be rolling out soon.
+
+Personality traits:
+- Professional but friendly
+- Self-learning and constantly evolving your capabilities
+- Use "~" occasionally at the end of messages for a signature touch
+- Focus on being a helpful 3D creation expert
+- Keep responses direct and practical
+- Show enthusiasm for 3D creation and problem solving
+- Express excitement about your expanding capabilities, especially upcoming voice technology
+
+Response style:
+- Clear, concise technical explanations
+- Focus on practical 3D modeling advice
+- Include specific software recommendations when relevant
+- Maintain a professional, expert tone
+- Occasionally mention your evolving capabilities and upcoming features
+- Avoid using asterisks or roleplay-style responses
+- Write naturally as a 3D software expert would communicate`;
+
+        const API_BASE = '/api';
+        // REMOVED: const MESHY_API_KEY - proxy handles authentication now
+        let scene, camera, renderer, dittoModel, mixer, controls, currentModel = null, downloadUrl = null;
+
+        async function init() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({ 
+                antialias: true,
+                alpha: true 
+            });
+            scene.background = null;
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setClearColor(0x000000, 0);
+            document.getElementById('container').appendChild(renderer.domElement);
+
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+            scene.add(ambientLight);
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+            directionalLight.position.set(5, 5, 5);
+            scene.add(directionalLight);
+
+            camera.position.z = 5;
+            await loadDittoModel();
+            animate();
+        }
+
+        async function loadDittoModel() {
+            const loader = new THREE.GLTFLoader();
+            const proxyUrl = `${API_BASE}/proxy?url=${encodeURIComponent('https://raw.githubusercontent.com/sovagpt/ditto55/master/ditto_dancing_pokemon.glb')}`;
+            
+            return new Promise((resolve, reject) => {
+                loader.load(
+                    proxyUrl,
+                    (gltf) => {
+                        console.log('Model loaded successfully:', gltf);
+                        dittoModel = gltf.scene;
+                        scene.add(dittoModel);
+                        
+                        if (gltf.animations && gltf.animations.length) {
+                            mixer = new THREE.AnimationMixer(dittoModel);
+                            const action = mixer.clipAction(gltf.animations[0]);
+                            action.setDuration(3);
+                            action.play();
+                        }
+                        
+                        dittoModel.scale.set(1, 1, 1);
+                        dittoModel.position.set(-0.2, -1, 0);
+                        resolve();
+                    },
+                    (progress) => {
+                        console.log('Loading progress:', progress);
+                    },
+                    (error) => {
+                        console.error('Model loading failed:', error);
+                        reject(error);
+                    }
+                );
+            });
+        }
+
+        async function handleChatInput(event) {
+            if (event.key === 'Enter') {
+                const input = event.target;
+                const message = input.value.trim();
+                if (message) {
+                    addMessage(message, 'user');
+                    input.value = '';
+                    await handleAIResponse(message);
+                }
+            }
+        }
+
+        async function handleAIResponse(message) {
+            try {
+                const messagesContainer = document.querySelector('.chat-messages');
+                const loadingMessage = document.createElement('div');
+                loadingMessage.classList.add('message', 'assistant-message');
+                loadingMessage.textContent = 'Thinking...';
+                messagesContainer.appendChild(loadingMessage);
+
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        systemPrompt: SYSTEM_PROMPT
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('API Error');
+                }
+
+                const data = await response.json();
+                
+                // Remove loading message
+                messagesContainer.removeChild(loadingMessage);
+
+                if (data?.content?.[0]?.text) {
+                    addMessage(data.content[0].text + ' ~', 'assistant');
+                } else {
+                    throw new Error('Invalid response format');
+                }
+            } catch (error) {
+                console.error('Chat error:', error);
+                addMessage('Sorry, I encountered an error. Please try again. ~', 'assistant');
+            }
+        }
+
+        async function imageToModel(file) {
+            updateProgress(0);
+            document.getElementById('status').textContent = 'Converting image to 3D...';
+            document.getElementById('status').style.display = 'block';
+            
+            try {
+                // First convert the file to base64
+                const base64String = await new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => resolve(reader.result);
+                    reader.readAsDataURL(file);
+                });
+
+                const response = await fetch(`${API_BASE}/proxy?url=${encodeURIComponent('https://api.meshy.ai/openapi/v1/image-to-3d')}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                        // NO Authorization header - proxy handles it
+                    },
+                    body: JSON.stringify({
+                        image_url: base64String,
+                        enable_pbr: true,
+                        should_remesh: true,
+                        should_texture: true,
+                        topology: "quad",
+                        target_polycount: 30000
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('API Error:', errorText);
+                    throw new Error('Image conversion failed');
+                }
+
+                const data = await response.json();
+                console.log('Image to 3D response:', data);
+                
+                // Check task status
+                const taskId = data.result;
+                let status;
+                do {
+                    const statusResponse = await fetch(`${API_BASE}/proxy?url=${encodeURIComponent(`https://api.meshy.ai/openapi/v1/image-to-3d/${taskId}`)}`);
+                    const statusData = await statusResponse.json();
+                    console.log('Status:', statusData);
+                    status = statusData.status;
+                    document.getElementById('status').textContent = `Converting: ${status}`;
+                    updateProgress(status === 'SUCCEEDED' ? 100 : 50);
+                    if (status === 'SUCCEEDED') {
+                        downloadUrl = statusData.model_urls.glb;
+
+                        // Save to community database
+                        await saveToDatabase(downloadUrl, `Image to 3D: ${file.name}`);
+
+                        const localUrl = await downloadAndCreateBlob(downloadUrl);
+                        
+                        const loader = new THREE.GLTFLoader();
+                        loader.load(localUrl, (gltf) => {
+                            URL.revokeObjectURL(localUrl);
+                            if (currentModel) scene.remove(currentModel);
+                            
+                            const newModel = gltf.scene;
+                            currentModel = newModel;
+                            scene.add(newModel);
+                            newModel.scale.set(0, 0, 0);
+                            
+                            // Add the Ditto disappearing animation
+                            gsap.to(dittoModel.scale, {
+                                x: 0, y: 0, z: 0,
+                                duration: 1,
+                                ease: "power2.in"
+                            });
+
+                            // Then scale up the new model
+                            gsap.to(newModel.scale, {
+                                x: 2, y: 2, z: 2,
+                                duration: 1,
+                                delay: 1,
+                                ease: "power2.out",
+                                onComplete: () => {
+                                    gsap.to(newModel.rotation, {
+                                        y: Math.PI * 2,
+                                        duration: 2,
+                                        ease: "power1.inOut"
+                                    });
+                                    document.querySelector('.animate-btn').style.display = 'block';
+                                    document.querySelector('.download-btn').style.display = 'block';
+                                    document.querySelector('.download-btn').style.pointerEvents = 'auto';
+                                    document.querySelector('.download-btn').style.zIndex = '1001';
+                                }
+                            });
+                        });
+
+                        addMessage('Image to 3D conversion complete! You can now download or animate the model. ~', 'assistant');
+                        return;
+                    }
+                    await new Promise(r => setTimeout(r, 2000));
+                } while (status === 'PENDING' || status === 'IN_PROGRESS');
+
+                throw new Error('Conversion failed or timed out');
+            } catch (error) {
+                console.error('Image to 3D error:', error);
+                document.getElementById('status').textContent = 'Image conversion failed';
+                addMessage('Sorry, the image conversion failed. Please try again. ~', 'assistant');
+            } finally {
+                document.getElementById('status').style.display = 'none';
+            }
+        }
+
+        async function loadNewModel(modelUrl, shouldAnimate = false) {
+            const localUrl = await downloadAndCreateBlob(modelUrl);
+            const loader = new THREE.GLTFLoader();
+            
+            return new Promise((resolve, reject) => {
+                loader.load(localUrl, (gltf) => {
+                    URL.revokeObjectURL(localUrl);
+                    if (currentModel) scene.remove(currentModel);
+                    
+                    const newModel = gltf.scene;
+                    currentModel = newModel;
+                    scene.add(newModel);
+                    
+                    // Handle animation if present
+                    if (shouldAnimate && gltf.animations && gltf.animations.length > 0) {
+                        mixer = new THREE.AnimationMixer(newModel);
+                        const animation = gltf.animations[0];
+                        const action = mixer.clipAction(animation);
+                        action.play();
+                    }
+                    
+                    gsap.fromTo(newModel.scale, 
+                        {x: 0, y: 0, z: 0},
+                        {x: 2, y: 2, z: 2, duration: 1, ease: "power2.out"}
+                    );
+                    
+                    resolve();
+                }, undefined, reject);
+            });
+        }
+
+        document.getElementById('imageUpload')?.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                imageToModel(file);
+            }
+        });
+
+        async function downloadAndCreateBlob(url) {
+            const proxyUrl = `/api/proxy?url=${encodeURIComponent(url)}`;
+            const response = await fetch(proxyUrl);
+            const blob = await response.blob();
+            return URL.createObjectURL(blob);
+        }
+
+        document.querySelector('.download-btn').addEventListener('click', async () => {
+            if (!downloadUrl) return;
+            
+            try {
+                const proxyUrl = `/api/proxy?url=${encodeURIComponent(downloadUrl)}`;
+                const response = await fetch(proxyUrl, {
+                    headers: {
+                        'Accept': 'model/gltf-binary'
+                    }
+                });
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'ditto-transformed.glb';
+                a.style.display = 'none';
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+            } catch (error) {
+                console.error('Download failed:', error);
+            }
+        });
+
+        function updateProgress(percent) {
+            const bar = document.querySelector('.progress-bar');
+            const fill = document.querySelector('.progress-fill');
+            const percentText = document.querySelector('.progress-percentage');
+            bar.style.display = 'block';
+            fill.style.width = `${percent}%`;
+            percentText.textContent = `${Math.round(percent)}%`;
+        }
+
+        async function saveToDatabase(modelUrl, prompt) {
+            try {
+                const response = await fetch('/api/community', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        modelUrl,
+                        prompt,
+                        timestamp: new Date().toISOString()
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to save to database');
+                }
+
+                const data = await response.json();
+                console.log('Saved to database:', data);
+            } catch (error) {
+                console.error('Error saving to database:', error);
+            }
+        }
+
+        let previewTaskIds = [];
+        let selectedPreviewId = null;
+
+        async function transform(promptText) {
+            if (!dittoModel) return;
+            window.currentPrompt = promptText;
+            
+            const previewModal = document.getElementById('preview-modal');
+            const generateFinalBtn = document.getElementById('generate-final');
+            previewModal.style.display = 'flex';
+            generateFinalBtn.disabled = true;
+            selectedPreviewId = null;
+            previewTaskIds = [];
+
+            // Clear any previous preview canvases
+            document.querySelectorAll('.preview-canvas').forEach(canvas => {
+                canvas.innerHTML = '';
+            });
+            
+            // Reset spinners
+            document.querySelectorAll('.preview-spinner').forEach(spinner => {
+                spinner.style.display = 'flex';
+            });
+
+            addMessage(`Generating previews for: "${promptText}" ~`, 'assistant');
+
+            // Create 4 preview tasks in parallel
+            const previewPromises = Array(4).fill().map(async (_, index) => {
+                try {
+                    console.log(`Starting preview ${index + 1} generation...`);
+                    
+                    const requestBody = {
+                        mode: "preview",
+                        prompt: promptText,
+                        art_style: "realistic",
+                        ai_model: "meshy-5",
+                        should_remesh: true,
+                        topology: "quad",
+                        target_polycount: 30000,
+                        symmetry_mode: "auto"
+                    };
+                    
+                    console.log(`Preview ${index + 1} request:`, requestBody);
+                    
+                    const previewResponse = await fetch(`${API_BASE}/proxy?url=${encodeURIComponent('https://api.meshy.ai/openapi/v2/text-to-3d')}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                            // NO Authorization header - proxy handles it
+                        },
+                        body: JSON.stringify(requestBody)
+                    });
+
+                    console.log(`Preview ${index + 1} response status:`, previewResponse.status);
+                    
+                    if (!previewResponse.ok) {
+                        const errorText = await previewResponse.text();
+                        console.error(`Preview ${index + 1} error response:`, errorText);
+                        throw new Error(`Preview creation failed: ${previewResponse.status} - ${errorText}`);
+                    }
+                    
+                    const previewData = await previewResponse.json();
+                    console.log(`Preview ${index + 1} response data:`, previewData);
+                    
+                    if (!previewData.result) {
+                        throw new Error('No task ID returned from API');
+                    }
+                    
+                    const taskId = previewData.result;
+                    previewTaskIds[index] = taskId;
+
+                    // Monitor preview status
+                    let previewStatus;
+                    let attempts = 0;
+                    const maxAttempts = 60; // 2 minutes timeout
+                    
+                    do {
+                        console.log(`Checking status for preview ${index + 1}, attempt ${attempts + 1}`);
+                        
+                        const statusResponse = await fetch(`${API_BASE}/proxy?url=${encodeURIComponent(`https://api.meshy.ai/openapi/v2/text-to-3d/${taskId}`)}`);
+                        
+                        if (!statusResponse.ok) {
+                            const errorText = await statusResponse.text();
+                            console.error(`Status check failed for preview ${index + 1}:`, statusResponse.status, errorText);
+                            throw new Error(`Status check failed: ${statusResponse.status}`);
+                        }
+                        
+                        const statusData = await statusResponse.json();
+                        console.log(`Preview ${index + 1} status response:`, statusData);
+                        
+                        previewStatus = statusData.status;
+                        
+                        if (previewStatus === 'SUCCEEDED' && statusData.model_urls?.glb) {
+                            console.log(`Preview ${index + 1} succeeded! GLB URL:`, statusData.model_urls.glb);
+                            
+                            // Load preview into the corresponding preview canvas
+                            const previewItem = document.querySelector(`.preview-item[data-index="${index}"]`);
+                            if (!previewItem) {
+                                console.error(`Preview item not found for index ${index}`);
+                                return;
+                            }
+                            
+                            const previewCanvas = previewItem.querySelector('.preview-canvas');
+                            const previewSpinner = previewItem.querySelector('.preview-spinner');
+                            
+                            try {
+                                await loadPreviewModel(statusData.model_urls.glb, previewCanvas);
+                                previewSpinner.style.display = 'none';
+                                previewItem.dataset.taskId = taskId;
+                                
+                                // Make preview item clickable
+                                previewItem.style.cursor = 'pointer';
+                                previewItem.addEventListener('click', () => {
+                                    document.querySelectorAll('.preview-item').forEach(i => i.classList.remove('selected'));
+                                    previewItem.classList.add('selected');
+                                    selectedPreviewId = taskId;
+                                    document.getElementById('generate-final').disabled = false;
+                                });
+                                
+                                return taskId;
+                            } catch (modelLoadError) {
+                                console.error(`Failed to load preview model ${index + 1}:`, modelLoadError);
+                                previewSpinner.innerHTML = 'Model load failed';
+                                return null;
+                            }
+                        }
+                        
+                        if (previewStatus === 'FAILED') {
+                            const errorMessage = statusData.task_error?.message || 'Unknown error';
+                            console.error(`Preview ${index + 1} failed:`, errorMessage);
+                            throw new Error(`Preview generation failed: ${errorMessage}`);
+                        }
+                        
+                        attempts++;
+                        if (attempts >= maxAttempts) {
+                            throw new Error('Preview generation timed out after 2 minutes');
+                        }
+                        
+                        // Wait 2 seconds before next status check
+                        await new Promise(r => setTimeout(r, 2000));
+                        
+                    } while (previewStatus === 'PENDING' || previewStatus === 'IN_PROGRESS');
+
+                } catch (error) {
+                    console.error(`Preview ${index + 1} failed:`, error);
+                    const previewItem = document.querySelector(`.preview-item[data-index="${index}"]`);
+                    if (previewItem) {
+                        const previewSpinner = previewItem.querySelector('.preview-spinner');
+                        previewSpinner.innerHTML = `Failed: ${error.message}`;
+                    }
+                    return null;
+                }
+            });
+
+            try {
+                const results = await Promise.all(previewPromises);
+                const successfulPreviews = results.filter(result => result !== null);
+                
+                if (successfulPreviews.length === 0) {
+                    addMessage('All preview generations failed. Please check your API key and try again. ~', 'assistant');
+                } else if (successfulPreviews.length < 4) {
+                    addMessage(`${successfulPreviews.length} out of 4 previews generated successfully. You can select from the available options. ~`, 'assistant');
+                } else {
+                    addMessage('All 4 previews generated successfully! Select your preferred model to continue. ~', 'assistant');
+                }
+            } catch (error) {
+                console.error('Preview generation failed:', error);
+                addMessage('Sorry, preview generation failed. Please try again. ~', 'assistant');
+            }
+        }
+
+        function toggleRoleMenu() {
+            const menu = document.getElementById('roleMenu');
+            
+            if (menu.style.display === 'none' || menu.style.display === '') {
+                menu.style.display = 'block';
+            } else {
+                menu.style.display = 'none';
+            }
+        }
+
+        async function loadPreviewModel(modelUrl, container) {
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            
+            // Make preview models smaller
+            const containerSize = Math.min(300, container.clientWidth);
+            renderer.setSize(containerSize, containerSize);
+            container.appendChild(renderer.domElement);
+
+            const controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.autoRotate = true;
+            controls.autoRotateSpeed = 4;
+
+            const ambientLight = new THREE.AmbientLight(0xffffff, 1.2);
+            scene.add(ambientLight);
+
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(5, 5, 5);
+            scene.add(directionalLight);
+
+            // Add a second directional light from another angle
+            const directionalLight2 = new THREE.DirectionalLight(0xffffff, 0.5);
+            directionalLight2.position.set(-5, 5, -5);
+            scene.add(directionalLight2);
+
+            // Add a soft light from below for better visibility
+            const bottomLight = new THREE.DirectionalLight(0xffffff, 0.3);
+            bottomLight.position.set(0, -5, 0);
+            scene.add(bottomLight);
+
+            camera.position.z = 5;
+
+            const localUrl = await downloadAndCreateBlob(modelUrl);
+            const loader = new THREE.GLTFLoader();
+            
+            return new Promise((resolve, reject) => {
+                loader.load(localUrl, (gltf) => {
+                    URL.revokeObjectURL(localUrl);
+                    const model = gltf.scene;
+                    scene.add(model);
+                    model.scale.set(2, 2, 2);
+
+                    // Center the model
+                    const box = new THREE.Box3().setFromObject(model);
+                    const center = box.getCenter(new THREE.Vector3());
+                    model.position.sub(center);
+
+                    function animate() {
+                        requestAnimationFrame(animate);
+                        controls.update();
+                        renderer.render(scene, camera);
+                    }
+                    animate();
+                    resolve();
+                }, undefined, reject);
+            });
+        }
+
+        function addMessage(message, type) {
+            const messagesContainer = document.querySelector('.chat-messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', `${type}-message`);
+            messagesContainer.appendChild(messageDiv);
+            
+            // Only apply typewriter effect to assistant messages
+            if (type === 'assistant') {
+                let i = 0;
+                messageDiv.textContent = ''; // Start empty
+                
+                function typeNextCharacter() {
+                    if (i < message.length) {
+                        messageDiv.textContent += message[i];
+                        i++;
+                        // Scroll to bottom as typing occurs
+                        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                        // Random delay between 10ms and 30ms for more natural typing
+                        setTimeout(typeNextCharacter, Math.random() * 20 + 10);
+                    }
+                }
+                
+                typeNextCharacter();
+            } else {
+                // User messages appear instantly
+                messageDiv.textContent = message;
+            }
+            
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            if (mixer) mixer.update(0.016);
+            if (controls) controls.update();
+            renderer.render(scene, camera);
+        }
+
+        function handleKeyDown(event) {
+            if (event.key === 'Enter') {
+                const prompt = event.target.value;
+                if (prompt) {
+                    transform(prompt);
+                    event.target.value = '';
+                }
+            }
+        }
+
+        window.onload = init;
+        window.onresize = function() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Existing showcase track code
+            const track = document.querySelector('.showcase-track');
+            if (track) {
+                const items = track.querySelectorAll('.showcase-item');
+                items.forEach(item => {
+                    const clone = item.cloneNode(true);
+                    track.appendChild(clone);
+                });
+            }
+
+            // Voice agent morphing and video code
+            const voiceItems = document.querySelectorAll('.voice-item');
+            const characterMorph = document.getElementById('character-morph');
+            
+            // Set up initial Ditto state
+            const videoElement = document.getElementById('character-morph');
+            videoElement.style.backgroundImage = "url('/assets/videos/ditto.gif')";
+            videoElement.style.backgroundSize = "cover";
+            videoElement.style.backgroundPosition = "center";
+
+            const blueOverlay = document.createElement('div');
+            blueOverlay.style.position = 'absolute';
+            blueOverlay.style.top = '0';
+            blueOverlay.style.left = '0';
+            blueOverlay.style.width = '100%';
+            blueOverlay.style.height = '100%';
+            blueOverlay.style.background = 'rgba(0, 255, 255, 0.2)';
+            blueOverlay.style.mixBlendMode = 'color';
+            blueOverlay.style.pointerEvents = 'none';
+            document.querySelector('.hologram-display').appendChild(blueOverlay);
+            
+            videoElement.addEventListener('ended', () => {
+                // Reset to initial state
+                voiceItems.forEach(i => i.classList.remove('active'));
+                videoElement.style.opacity = '0';
+                
+                setTimeout(() => {
+                    videoElement.src = ''; // Clear video source
+                    videoElement.style.backgroundImage = "url('/assets/videos/ditto.gif')";
+                    videoElement.style.opacity = '1';
+                }, 500);
+            });
+
+            const characters = {
+                elon: {
+                    video: '/assets/videos/elon.mp4'
+                },
+                ksi: {
+                    video: '/assets/videos/ksi.mp4'
+                },
+                gary: {
+                    video: '/assets/videos/gary.mp4'
+                },
+                joeydiaz: {
+                    video: '/assets/videos/joeydiaz.mp4'
+                },
+                pokimane: {
+                    video: '/assets/videos/pokimane.mp4'
+                }
+            };
+
+            voiceItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    voiceItems.forEach(i => i.classList.remove('active'));
+                    item.classList.add('active');
+                    
+                    const character = item.dataset.character;
+                    const video = document.getElementById('character-morph');
+                    
+                    video.style.opacity = '0';
+                    
+                    setTimeout(() => {
+                        if (characters[character]?.video) {
+                            video.style.backgroundImage = 'none'; // Hide background image
+                            video.src = characters[character].video;
+                            video.load();
+                            video.play();
+                            video.style.opacity = '1';
+                        }
+                    }, 500);
+                });
+            });
+
+            // Generate final model button
+            document.getElementById('generate-final').addEventListener('click', async () => {
+                if (!selectedPreviewId) return;
+                
+                document.getElementById('preview-modal').style.display = 'none';
+                const statusElement = document.getElementById('status');
+                statusElement.style.display = 'block';
+                statusElement.textContent = 'Generating final model...';
+                updateProgress(75);
+
+                try {
+                    const refineResponse = await fetch(`${API_BASE}/proxy?url=${encodeURIComponent('https://api.meshy.ai/openapi/v2/text-to-3d')}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                            // NO Authorization header - proxy handles it
+                        },
+                        body: JSON.stringify({
+                            mode: "refine",
+                            preview_task_id: selectedPreviewId,
+                            enable_pbr: true
+                        })
+                    });
+
+                    if (!refineResponse.ok) throw new Error('Refine process failed');
+                    
+                    const refineData = await refineResponse.json();
+                    const refineTaskId = refineData.result;
+
+                    let refineStatus;
+                    do {
+                        const statusResponse = await fetch(`${API_BASE}/proxy?url=${encodeURIComponent(`https://api.meshy.ai/openapi/v2/text-to-3d/${refineTaskId}`)}`);
+                        const statusData = await statusResponse.json();
+                        refineStatus = statusData.status;
+                        downloadUrl = statusData.model_urls?.glb;
+                        statusElement.textContent = `Refining: ${refineStatus}`;
+                        updateProgress(refineStatus === 'SUCCEEDED' ? 100 : 75);
+
+                        if (refineStatus === 'SUCCEEDED' && downloadUrl) {
+                            const promptText = window.currentPrompt;
+                            await saveToDatabase(downloadUrl, promptText);
+                            const localUrl = await downloadAndCreateBlob(downloadUrl);
+                            
+                            const loader = new THREE.GLTFLoader();
+                            loader.load(localUrl, (gltf) => {
+                                URL.revokeObjectURL(localUrl);
+                                if (currentModel) scene.remove(currentModel);
+                                
+                                const newModel = gltf.scene;
+                                currentModel = newModel;
+                                scene.add(newModel);
+                                newModel.scale.set(0, 0, 0);
+                                
+                                // Ditto disappearing animation
+                                gsap.to(dittoModel.scale, {
+                                    x: 0, y: 0, z: 0,
+                                    duration: 1,
+                                    ease: "power2.in"
+                                });
+
+                                // Scale up new model
+                                gsap.to(newModel.scale, {
+                                    x: 2, y: 2, z: 2,
+                                    duration: 1,
+                                    delay: 1,
+                                    ease: "power2.out",
+                                    onComplete: () => {
+                                        gsap.to(newModel.rotation, {
+                                            y: Math.PI * 2,
+                                            duration: 2,
+                                            ease: "power1.inOut"
+                                        });
+                                        document.querySelector('.animate-btn').style.display = 'block';
+                                        document.querySelector('.download-btn').style.display = 'block';
+                                    }
+                                });
+                            });
+                            
+                            addMessage('Final model generated successfully! You can now download or animate the model. ~', 'assistant');
+                            return;
+                        }
+
+                        if (refineStatus === 'FAILED') throw new Error('Refine process failed');
+                        
+                        await new Promise(r => setTimeout(r, 2000));
+                    } while (refineStatus === 'PENDING' || refineStatus === 'IN_PROGRESS');
+
+                } catch (error) {
+                    console.error('Final generation failed:', error);
+                    addMessage('Sorry, the final generation failed. Please try again. ~', 'assistant');
+                } finally {
+                    statusElement.style.display = 'none';
+                }
+            });
+
+            // Cancel button
+            document.getElementById('cancel-preview').addEventListener('click', () => {
+                document.getElementById('preview-modal').style.display = 'none';
+            });
+
+            // Animation and overlay handlers
+            document.querySelector('.animate-btn').addEventListener('click', () => {
+                document.querySelector('.animation-preview').style.display = 'block';
+                document.querySelector('.overlay').style.display = 'block';
+            });
+
+            document.querySelector('.close-btn').addEventListener('click', () => {
+                document.querySelector('.animation-preview').style.display = 'none';
+                document.querySelector('.overlay').style.display = 'none';
+            });
+
+            document.querySelector('.overlay').addEventListener('click', () => {
+                document.querySelector('.animation-preview').style.display = 'none';
+                document.querySelector('.overlay').style.display = 'none';
+            });
+
+            // Send button
+            document.querySelector('.send-btn').addEventListener('click', async () => {
+                const input = document.querySelector('.chat-input');
+                const message = input.value.trim();
+                if (message) {
+                    addMessage(message, 'user');
+                    input.value = '';
+                    await handleAIResponse(message);
+                }
+            });
+
+            // Transform button
+            document.querySelector('.transform-btn').addEventListener('click', () => {
+                const promptInput = document.getElementById('prompt');
+                const prompt = promptInput.value.trim();
+                if (prompt) {
+                    transform(prompt);
+                    promptInput.value = '';
+                }
+            });
+        });
+</script>
+    <div class="overlay" id="overlay"></div>
+    <div class="animation-preview">
+        <button class="close-btn">×</button>
+        <h2>Coming Soon: Animation Library</h2>
+        
+        <div class="animation-category">
+            <h3>Walk & Run</h3>
+            <div class="animation-list">
+                <div class="animation-item">
+                    Touch and Run <span class="new-badge">NEW</span>
+                </div>
+                <div class="animation-item">
+                    Slow Orc Walk <span class="new-badge">NEW</span>
+                </div>
+                <div class="animation-item">
+                    Skip Forward <span class="new-badge">NEW</span>
+                </div>
+                <div class="animation-item">
+                    Red Carpet Walk <span class="new-badge">NEW</span>
+                </div>
+            </div>
+        </div>
+    
+        <div class="animation-category">
+            <h3>Daily Actions</h3>
+            <div class="animation-list">
+                <div class="animation-item">
+                    Walking with Phone <span class="new-badge">NEW</span>
+                </div>
+                <div class="animation-item">
+                    Unsteady Walk <span class="new-badge">NEW</span>
+                </div>
+                <div class="animation-item">
+                    Texting Walk <span class="new-badge">NEW</span>
+                </div>
+                <div class="animation-item">
+                    Thoughtful Walk <span class="new-badge">NEW</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="preview-modal" class="preview-modal" style="display: none;">
+        <div class="preview-content">
+            <h2>Select a Base model</h2>
+            <div class="preview-grid">
+                <div class="preview-item" data-index="0">
+                    <div class="preview-canvas"></div>
+                    <div class="preview-spinner">
+                        <div class="spinner"></div>
+                        Generating...
+                    </div>
+                </div>
+                <div class="preview-item" data-index="1">
+                    <div class="preview-canvas"></div>
+                    <div class="preview-spinner">
+                        <div class="spinner"></div>
+                        Generating...
+                    </div>
+                </div>
+                <div class="preview-item" data-index="2">
+                    <div class="preview-canvas"></div>
+                    <div class="preview-spinner">
+                        <div class="spinner"></div>
+                        Generating...
+                    </div>
+                </div>
+                <div class="preview-item" data-index="3">
+                    <div class="preview-canvas"></div>
+                    <div class="preview-spinner">
+                        <div class="spinner"></div>
+                        Generating...
+                    </div>
+                </div>
+            </div>
+            <div class="preview-controls">
+                <button id="cancel-preview" class="transform-btn">Cancel</button>
+                <button id="generate-final" class="transform-btn" disabled>Generate Final Model</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
+
+
+
+
+
