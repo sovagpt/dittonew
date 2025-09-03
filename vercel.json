@@ -6,7 +6,7 @@
     }
   },
   "routes": [
-    { "src": "/rosie", "dest": "/rosie.html" },
+    { "src": "/docs", "dest": "/docs.html" },
     { "src": "/community", "dest": "/community.html" }
   ],
   "env": {
@@ -16,3 +16,4 @@
   }
 
 }
+
