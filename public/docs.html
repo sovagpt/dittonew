@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DittoGPT Documentation - 3D Asset Generation</title>
+    <link rel="icon" type="image/webp" href="https://cdn.prod.website-files.com/674396c59212c6ea348b24e0/678699eef3f050d53a05dac1_dbfonty-dbbe0a78-2f54-494e-bce6-7a7ea7157b73.gif">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-rust.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            background: url('https://cdn.prod.website-files.com/674396c59212c6ea348b24e0/677815b17d293c5b2b9269c8_forest.png') no-repeat center center fixed;
+            background-size: cover;
+            font-family: 'Press Start 2P', system-ui;
+            line-height: 1.6;
+            color: white;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 30px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .logo {
+            color: white;
+            font-family: 'Press Start 2P', system-ui;
+            font-size: 18px;
+            text-shadow: 2px 2px 0 #3B4CCA;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+
+        .logo img {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 15px;
+        }
+
+        .header-btn {
+            background: #A664A5;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-family: 'Press Start 2P', system-ui;
+            font-size: 12px;
+            transition: transform 0.2s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .header-btn:hover {
+            transform: scale(1.05);
+            background: #8A4589;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 100px 20px 40px;
+        }
+
+        .docs-title {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .docs-title h1 {
+            font-size: 48px;
+            color: white;
+            text-shadow: 2px 2px 0 #3B4CCA;
+            margin-bottom: 20px;
+        }
+
+        .docs-title p {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 2;
+        }
+
+        .section {
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 40px;
+            margin-bottom: 40px;
+            backdrop-filter: blur(5px);
+        }
+
+        .section h2 {
+            color: #A664A5;
+            font-size: 24px;
+            margin-bottom: 30px;
+            text-shadow: 1px 1px 0 #000;
+        }
+
+        .section h3 {
+            color: #3B4CCA;
+            font-size: 18px;
+            margin-bottom: 20px;
+            margin-top: 30px;
+        }
+
+        .section p {
+            color: white;
+            font-size: 14px;
+            line-height: 2;
+            margin-bottom: 20px;
+        }
+
+        .code-block {
+            background: #1a1a1a;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            margin: 30px 0;
+            overflow: hidden;
+        }
+
+        .code-header {
+            background: #2a2a2a;
+            padding: 15px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .code-lang {
+            color: #A664A5;
+            font-size: 12px;
+        }
+
+        .copy-btn {
+            background: #3B4CCA;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: 'Press Start 2P', system-ui;
+            font-size: 8px;
+            transition: all 0.2s;
+        }
+
+        .copy-btn:hover {
+            background: #2A3BBB;
+            transform: scale(1.05);
+        }
+
+        .code-content {
+            padding: 20px;
+            overflow-x: auto;
+        }
+
+        pre[class*="language-"] {
+            margin: 0 !important;
+            padding: 0 !important;
+            background: transparent !important;
+            font-family: 'Press Start 2P', system-ui !important;
+            font-size: 10px !important;
+            line-height: 2 !important;
+        }
+
+        code[class*="language-"] {
+            font-family: 'Press Start 2P', system-ui !important;
+            color: #00ffff !important;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin: 30px 0;
+        }
+
+        .feature-card {
+            background: rgba(59, 76, 202, 0.2);
+            border: 1px solid rgba(59, 76, 202, 0.5);
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            background: rgba(59, 76, 202, 0.3);
+            transform: translateY(-5px);
+            box-shadow: 0 5px 25px rgba(59, 76, 202, 0.3);
+        }
+
+        .feature-card h4 {
+            color: #A664A5;
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+
+        .feature-card p {
+            font-size: 12px;
+            line-height: 1.8;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin: 30px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 12px;
+        }
+
+        th {
+            background: rgba(166, 100, 165, 0.3);
+            color: #A664A5;
+            font-weight: normal;
+        }
+
+        td {
+            color: white;
+        }
+
+        .alert {
+            background: rgba(59, 76, 202, 0.2);
+            border: 1px solid rgba(59, 76, 202, 0.5);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 30px 0;
+            border-left: 4px solid #3B4CCA;
+        }
+
+        .alert.warning {
+            background: rgba(255, 211, 0, 0.2);
+            border-color: rgba(255, 211, 0, 0.5);
+            border-left-color: #FFD700;
+        }
+
+        .alert.success {
+            background: rgba(76, 175, 80, 0.2);
+            border-color: rgba(76, 175, 80, 0.5);
+            border-left-color: #4CAF50;
+        }
+
+        .alert strong {
+            color: #A664A5;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .navigation-toc {
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 10px;
+            padding: 30px;
+            margin-bottom: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .navigation-toc h3 {
+            color: #A664A5;
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
+
+        .toc-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .toc-list li {
+            padding: 0;
+        }
+
+        .toc-list a {
+            color: white;
+            text-decoration: none;
+            font-size: 12px;
+            display: block;
+            padding: 10px;
+            background: rgba(59, 76, 202, 0.2);
+            border-radius: 6px;
+            transition: all 0.2s;
+            border: 1px solid rgba(59, 76, 202, 0.3);
+        }
+
+        .toc-list a:hover {
+            background: rgba(59, 76, 202, 0.4);
+            transform: scale(1.02);
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                padding: 10px 15px;
+            }
+            
+            .logo {
+                font-size: 14px;
+            }
+            
+            .docs-title h1 {
+                font-size: 32px;
+            }
+            
+            .section {
+                padding: 20px;
+            }
+            
+            .section h2 {
+                font-size: 20px;
+            }
+            
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .toc-list {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <a href="/" class="logo">
+            <img src="https://cdn.prod.website-files.com/674396c59212c6ea348b24e0/678699eef3f050d53a05dac1_dbfonty-dbbe0a78-2f54-494e-bce6-7a7ea7157b73.gif" alt="Ditto Logo">
+            DittoGPT Documentation
+        </a>
+        <div class="nav-buttons">
+            <a href="/" class="header-btn">Back to Generator</a>
+            <a href="/community" class="header-btn">Community</a>
+            <a href="https://x.com/DittoGPT" class="header-btn" target="_blank">Twitter</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="docs-title">
+            <h1>DEVELOPER DOCUMENTATION</h1>
+            <p>Build with DittoGPT's powerful 3D generation engine. Create assets for Roblox, Unity, Fortnite Creative, and more with our Rust-powered backend and advanced neural networks.</p>
+        </div>
+
+        <div class="navigation-toc">
+            <h3>Quick Navigation</h3>
+            <ul class="toc-list">
+                <li><a href="#getting-started">Getting Started Guide</a></li>
+                <li><a href="#rust-engine">Rust Core Engine</a></li>
+                <li><a href="#roblox-sdk">Roblox Integration SDK</a></li>
+                <li><a href="#fortnite-tools">Fortnite Creative Tools</a></li>
+                <li><a href="#unity-pipeline">Unity Asset Pipeline</a></li>
+                <li><a href="#api-docs">REST API Reference</a></li>
+                <li><a href="#performance">Performance Optimization</a></li>
+                <li><a href="#examples">Code Examples</a></li>
+            </ul>
+        </div>
+
+        <section id="getting-started" class="section">
+            <h2>Getting Started</h2>
+            <p>DittoGPT transforms text prompts into production-ready 3D assets using cutting-edge neural networks and high-performance Rust computation. Our system generates optimized models for major game engines and platforms.</p>
+            
+            <div class="grid">
+                <div class="feature-card">
+                    <h4>Text-to-3D Generation</h4>
+                    <p>Advanced diffusion models create detailed meshes and textures from natural language descriptions.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>Platform Optimization</h4>
+                    <p>Automatic optimization for Roblox, Unity, Unreal Engine, and mobile platforms with proper LOD systems.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>Real-time Processing</h4>
+                    <p>Rust-based backend delivers sub-second generation times with parallel mesh processing.</p>
+                </div>
+            </div>
+
+            <div class="code-block">
+                <div class="code-header">
+                    <span class="code-lang">Installation</span>
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+                <div class="code-content">
+                    <pre><code class="language-bash"># Install DittoGPT CLI
+npm install -g ditto-cli
+
+# Initialize new project
+ditto init my-3d-project
+cd my-3d-project
+
+# Set your API key
+ditto config set-key YOUR_API_KEY
+
+# Generate your first asset
+ditto generate "red sports car" --platform roblox --quality high</code></pre>
+                </div>
+            </div>
+        </section>
+
+        <section id="rust-engine" class="section">
+            <h2>Rust Core Engine</h2>
+            <p>Our high-performance backend is built in Rust for maximum speed and memory safety. The engine handles parallel mesh generation, texture synthesis, and platform-specific optimizations.</p>
+
+            <div class="alert">
+                <strong>Performance Note:</strong>
+                The Rust engine can process multiple asset generations simultaneously using async/await patterns and achieves up to 50x faster generation compared to Python-based alternatives.
+            </div>
+
+            <div class="code-block">
+                <div class="code-header">
+                    <span class="code-lang">Rust Core Engine</span>
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+                <div class="code-content">
+                    <pre><code class="language-rust">use ditto_core::{GenerationEngine, AssetRequest, PlatformTarget};
+use tokio::sync::mpsc;
+use std::sync::Arc;
+use rayon::prelude::*;
+
+pub struct DittoEngine {
+    neural_weights: Arc&lt;NeuralWeights&gt;,
+    mesh_processor: Arc&lt;MeshProcessor&gt;,
+    texture_gen: Arc&lt;TextureGenerator&gt;,
+    platform_optimizers: HashMap&lt;PlatformTarget, Box&lt;dyn PlatformOptimizer&gt;&gt;,
+}
+
+impl DittoEngine {
+    pub fn new() -> Result&lt;Self, DittoError&gt; {
+        let neural_weights = Arc::new(NeuralWeights::load_from_checkpoint("models/ditto-v3.safetensors")?);
+        let mesh_processor = Arc::new(MeshProcessor::new()?);
+        let texture_gen = Arc::new(TextureGenerator::new()?);
+        
+        let mut platform_optimizers: HashMap&lt;PlatformTarget, Box&lt;dyn PlatformOptimizer&gt;&gt; = HashMap::new();
+        platform_optimizers.insert(PlatformTarget::Roblox, Box::new(RobloxOptimizer::new()));
+        platform_optimizers.insert(PlatformTarget::Unity, Box::new(UnityOptimizer::new()));
+        platform_optimizers.insert(PlatformTarget::Fortnite, Box::new(FortniteOptimizer::new()));
+        
+        Ok(DittoEngine {
+            neural_weights,
+            mesh_processor,
+            texture_gen,
+            platform_optimizers,
+        })
+    }
+    
+    pub async fn generate_asset(&self, request: AssetRequest) -> Result&lt;GeneratedAsset, DittoError&gt; {
+        let start_time = std::time::Instant::now();
+        
+        // Tokenize and encode the prompt using our custom tokenizer
+        let prompt_embedding = self.neural_weights.encode_prompt(&request.prompt).await?;
+        
+        // Parallel generation pipeline
+        let (mesh_tx, mut mesh_rx) = mpsc::channel(1);
+        let (texture_tx, mut texture_rx) = mpsc::channel(1);
+        
+        // Generate mesh and textures concurrently
+        let mesh_task = self.generate_mesh(prompt_embedding.clone(), mesh_tx);
+        let texture_task = self.generate_textures(prompt_embedding, request.texture_resolution, texture_tx);
+        
+        // Wait for both tasks to complete
+        tokio::try_join!(mesh_task, texture_task)?;
+        
+        let base_mesh = mesh_rx.recv().await.ok_or(DittoError::MeshGenerationFailed)?;
+        let textures = texture_rx.recv().await.ok_or(DittoError::TextureGenerationFailed)?;
+        
+        // Platform-specific optimization
+        let optimizer = self.platform_optimizers.get(&request.target_platform)
+            .ok_or(DittoError::UnsupportedPlatform)?;
+        
+        let optimized_asset = optimizer.optimize(&base_mesh, &textures, &request).await?;
+        
+        Ok(GeneratedAsset {
+            mesh: optimized_asset.mesh,
+            textures: optimized_asset.textures,
+            metadata: AssetMetadata {
+                prompt: request.prompt,
+                generation_time: start_time.elapsed(),
+                triangle_count: optimized_asset.triangle_count,
+                vertex_count: optimized_asset.vertex_count,
+                platform: request.target_platform,
+            }
+        })
+    }
+    
+    async fn generate_mesh(&self, embedding: PromptEmbedding, tx: mpsc::Sender&lt;Mesh&gt;) -> Result&lt;(), DittoError&gt; {
+        // Neural network forward pass to generate vertex positions and topology
+        let raw_vertices = self.neural_weights.generate_vertices(&embedding).await?;
+        let topology_indices = self.neural_weights.generate_topology(&embedding).await?;
+        
+        // Parallel processing of vertex data using Rayon
+        let processed_vertices: Vec&lt;Vertex&gt; = raw_vertices
+            .par_iter()
+            .map(|&raw_vertex| {
+                let position = Vector3::new(raw_vertex.x, raw_vertex.y, raw_vertex.z);
+                let normal = self.mesh_processor.compute_normal(&raw_vertex);
+                let uv = self.mesh_processor.compute_uv(&raw_vertex);
+                
+                Vertex { position, normal, uv }
+            })
+            .collect();
+        
+        // Create final mesh with optimized topology
+        let mesh = Mesh::new(processed_vertices, topology_indices)?;
+        tx.send(mesh).await.map_err(|_| DittoError::ChannelError)?;
+        
+        Ok(())
+    }
+}
+
+// Roblox-specific optimizer implementation
+pub struct RobloxOptimizer;
+
+impl RobloxOptimizer {
+    fn new() -> Self {
+        RobloxOptimizer
+    }
+}
+
+#[async_trait]
+impl PlatformOptimizer for RobloxOptimizer {
+    async fn optimize(&self, mesh: &Mesh, textures: &[Texture], request: &AssetRequest) -> Result&lt;OptimizedAsset, DittoError&gt; {
+        // Roblox has specific poly count limits and material restrictions
+        let target_polys = match request.quality_level {
+            QualityLevel::Mobile => 2000,
+            QualityLevel::Standard => 5000,
+            QualityLevel::High => 10000,
+        };
+        
+        // Decimate mesh if needed
+        let optimized_mesh = if mesh.triangle_count() > target_polys {
+            self.decimate_mesh(mesh, target_polys).await?
+        } else {
+            mesh.clone()
+        };
+        
+        // Convert textures to Roblox-compatible format (1024x1024 max)
+        let roblox_textures = self.optimize_textures_for_roblox(textures).await?;
+        
+        // Generate Roblox Lua scripts for the asset
+        let lua_scripts = self.generate_roblox_scripts(&optimized_mesh, &roblox_textures)?;
+        
+        Ok(OptimizedAsset {
+            mesh: optimized_mesh,
+            textures: roblox_textures,
+            triangle_count: optimized_mesh.triangle_count(),
+            vertex_count: optimized_mesh.vertex_count(),
+            platform_data: Some(PlatformData::Roblox { scripts: lua_scripts }),
+        })
+    }
+}</code></pre>
+                </div>
+            </div>
+        </section>
+
+        </script>
+</body>
+</html>
